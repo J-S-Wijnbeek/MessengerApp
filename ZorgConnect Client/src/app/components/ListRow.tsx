@@ -1,6 +1,6 @@
 import { ChevronRight } from "lucide-react";
 
-type StatusType = "beschikbaar" | "achterwacht" | "niet-beschikbaar";
+export type StatusType = "beschikbaar" | "achterwacht" | "niet-beschikbaar";
 
 interface ListRowProps {
   avatarUrl?: string;
