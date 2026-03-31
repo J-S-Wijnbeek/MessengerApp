@@ -67,7 +67,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
 echo json_encode(["error" => "No valid action."]);
 exit;
-
 //
 // CREATE TABLE appointment_requests (
 //     id VARCHAR(20) PRIMARY KEY,

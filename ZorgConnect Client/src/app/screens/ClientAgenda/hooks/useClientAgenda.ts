@@ -1,27 +1,28 @@
 import { useEffect, useState } from "react";
+import { useCurrentUserName } from "../../../hooks/useCurrentUserName";
 
 // Types
 export interface Appointment {
   id: string;
   date: string;
-  time_of_day: string;
+  timeOfDay: "ochtend" | "middag" | "avond" | "geen-voorkeur";
   notes: string;
-  created_by_name: string;
-  created_at: string;
+  createdByName: string;
+  createdAt: string;
 }
 
 export interface AppointmentRequest {
   date: string;
-  time_of_day: "ochtend" | "middag" | "avond" | "geen-voorkeur";
+  timeOfDay: "ochtend" | "middag" | "avond" | "geen-voorkeur";
   notes: string;
 }
 
 
 
 export function useClientAgenda() {
-  // TODO: Replace with real logged-in user once auth/profile state exists.
-  const currentUserName = "Peter Hendriks";
-  const dbUrl = import.meta.env.VITE_DATABASE_URL;
+  const currentUserName = useCurrentUserName();
+  const dbBaseUrl = import.meta.env.VITE_DATABASE_URL || "http://localhost:3001";
+  const appointmentRequestsUrl = `${dbBaseUrl.replace(/\/$/, "")}/appointmentRequests`;
 
   const [view, setView] = useState<string>("Aankomend");
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -34,7 +35,7 @@ export function useClientAgenda() {
   useEffect(() => {
     async function fetchAppointments() {
       try {
-        const res = await fetch(dbUrl, { method: 'GET' });
+        const res = await fetch(appointmentRequestsUrl, { method: "GET" });
         if (res.ok) {
           const data = await res.json();
           setAppointments(data);
@@ -44,7 +45,7 @@ export function useClientAgenda() {
       }
     }
     fetchAppointments();
-  }, [dbUrl]);
+  }, [appointmentRequestsUrl]);
 
   // Filter afspraken voor vandaag, later en afgelopen
 
@@ -58,23 +59,21 @@ export function useClientAgenda() {
   const handleAppointmentRequest = (request: AppointmentRequest) => {
     (async () => {
       try {
-        const res = await fetch(dbUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const res = await fetch(appointmentRequestsUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            action: 'create',
             date: request.date,
-            time_of_day: request.time_of_day,
+            timeOfDay: request.timeOfDay,
             notes: request.notes,
-            created_by_name: currentUserName,
+            createdByName: currentUserName,
+            createdAt: new Date().toISOString(),
           }),
         });
         if (res.ok) {
-          // Herlaad afspraken na toevoegen
-          const updated = await fetch(dbUrl, { method: 'GET' });
-          if (updated.ok) {
-            setAppointments(await updated.json());
-          }
+          // json-server returns the created object; add it optimistically
+          const created = await res.json();
+          setAppointments((prev) => [...prev, created]);
         }
       } catch (e) {
         console.warn('Failed to save appointment request:', e);
