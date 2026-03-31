@@ -90,7 +90,7 @@ export default function ClientInstellingen() {
         <div className="flex flex-col w-3/4">
           <span className="text-gray-900">SOS-knop tonen</span>
           <span className="text-xs text-gray-500">
-            Schakel de SOS-snelknop in de navigatiebalk onderin aan of uit. Bij het verzenden van de oproep wordt er een locatie meegegeven.
+            Schakel de SOS-snelknop in de navigatiebalk onderin aan of uit. Als deze optie uit staat, vind je de SOS-pagina alleen nog via de knop hieronder.
           </span>
         </div>
         <button
@@ -113,6 +113,18 @@ export default function ClientInstellingen() {
           />
         </button>
       </div>
+
+      {/* Alt. SOS-toegang vanuit instellingen (alleen zichtbaar als knop onderin uitstaat) */}
+      {!sosBevestiging && (
+        <div className="px-4 py-4 border-b border-gray-100">
+          <button
+            onClick={() => navigate("/sos")}
+            className="w-full bg-[#D9534F] text-white py-3 rounded-lg font-semibold text-center hover:bg-[#C64541] transition-colors"
+          >
+            Open SOS-pagina
+          </button>
+        </div>
+      )}
 
       {/* Security */}
       <SectionBar title="Beveiliging" />
