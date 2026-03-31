@@ -1,3 +1,4 @@
+import * as React from "react";
 import { TealHeader } from "../../components/TealHeader";
 import { ClientBottomNav } from "../../components/ClientBottomNav";
 import { mockCoupledCareWorkers } from "../../data/mockData";
