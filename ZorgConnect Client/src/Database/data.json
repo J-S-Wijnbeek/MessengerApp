@@ -1,3 +1,32 @@
 {
-    
+  "appointmentRequests": [
+    {
+      "date": "2026-04-03",
+      "timeOfDay": "avond",
+      "notes": "test",
+      "createdAt": "2026-03-31T11:39:39.098Z",
+      "id": "2o5DXnASd7I"
+    },
+    {
+      "date": "2026-04-02",
+      "timeOfDay": "middag",
+      "notes": "Test 2",
+      "createdByName": "Peter Hendriks",
+      "createdAt": "2026-03-31T11:41:02.763Z",
+      "id": "1tW5QwBTTPA"
+    }
+  ],
+  "messages": [
+    {
+      "chatId": 5,
+      "senderId": "client-1",
+      "receiverId": 5,
+      "text": "Hoi, heb je even tijd om te bellen?",
+      "sender": "client",
+      "time": "13:49",
+      "createdAt": "2026-03-31T11:49:42.353Z",
+      "id": "s6ETeAw76lo"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
 }

@@ -14,7 +14,11 @@ export default function Berichten() {
     setSearchQuery,
     showUnavailableAlert,
     setShowUnavailableAlert,
-    mockMessages,
+    messages,
+    isMessagesLoading,
+    isSending,
+    threads,
+    isThreadsLoading,
     filteredCareWorkers,
     availableStaff,
     selectedStaffMember,
@@ -25,6 +29,7 @@ export default function Berichten() {
     openNewChatSheet,
     closeNewChatSheet,
     startChat,
+    sendMessage,
   } = useBerichten();
 
   if (selectedChat) {
@@ -94,7 +99,12 @@ export default function Berichten() {
 
         {/* Chat Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
-          {mockMessages.map((msg) => (
+          {isMessagesLoading ? (
+            <div className="text-center text-sm text-gray-400 py-6">Berichten laden...</div>
+          ) : messages.length === 0 ? (
+            <div className="text-center text-sm text-gray-400 py-6">Nog geen berichten</div>
+          ) : (
+            messages.map((msg) => (
             <div
               key={msg.id}
               className={`flex ${msg.sender === "client" ? "justify-end" : "justify-start"}`}
@@ -116,7 +126,8 @@ export default function Berichten() {
                 </div>
               </div>
             </div>
-          ))}
+          ))
+          )}
         </div>
 
         {/* Input Bar */}
@@ -145,10 +156,17 @@ export default function Berichten() {
               type="text"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") sendMessage();
+              }}
               placeholder="Typ een bericht..."
               className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#F5A623]"
             />
-            <button className="w-10 h-10 bg-[#1DC6B4] text-white rounded-full flex items-center justify-center hover:bg-[#18B5A3] transition-colors">
+            <button
+              onClick={sendMessage}
+              disabled={isSending}
+              className="w-10 h-10 bg-[#1DC6B4] text-white rounded-full flex items-center justify-center hover:bg-[#18B5A3] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+            >
               <Send size={20} />
             </button>
           </div>
@@ -165,41 +183,51 @@ export default function Berichten() {
 
       {/* Chat List */}
       <div>
-        {mockCoupledCareWorkers.map((worker, index) => {
-          const statusColors = ["bg-green-500", "bg-green-500", "bg-[#F5A623]"];
-          const statusColor = statusColors[index] || "bg-gray-400";
+        {isThreadsLoading ? (
+          <div className="text-center text-sm text-gray-400 py-10">Chats laden...</div>
+        ) : threads.length === 0 ? (
+          <div className="text-center text-sm text-gray-400 py-10">
+            Nog geen chats
+          </div>
+        ) : (
+          threads.map((thread) => {
+            const worker = mockCoupledCareWorkers.find((w) => w.id === thread.chatId);
+            if (!worker) return null;
 
-          return (
-            <div
-              key={worker.id}
-              onClick={() => openChat(worker.id)}
-              className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 active:bg-gray-50 cursor-pointer"
-            >
-              <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 relative">
-                <span className="text-gray-500 text-lg font-medium">
-                  {worker.name.charAt(0)}
-                </span>
-                <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-white rounded-full flex items-center justify-center">
-                  <div className={`w-3 h-3 rounded-full ${statusColor}`} />
-                </div>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-medium text-[#1DC6B4]">{worker.name}</div>
-                <div className="text-sm text-gray-500 truncate">
-                  {index === 0 ? "Hallo, hoe gaat het?" : index === 1 ? "Bedankt voor het gesprek!" : "Tot morgen!"}
-                </div>
-              </div>
-              <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                <div className="text-xs text-gray-500">{index === 0 ? "14:30" : index === 1 ? "Gisteren" : "Maandag"}</div>
-                {index === 0 && (
-                  <div className="w-5 h-5 bg-[#1DC6B4] text-white text-xs rounded-full flex items-center justify-center">
-                    2
+            const statusColor =
+              worker.status === "beschikbaar"
+                ? "bg-green-500"
+                : worker.status === "achterwacht"
+                ? "bg-[#F5A623]"
+                : "bg-gray-400";
+
+            return (
+              <div
+                key={worker.id}
+                onClick={() => openChat(worker.id)}
+                className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 active:bg-gray-50 cursor-pointer"
+              >
+                <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 relative">
+                  <span className="text-gray-500 text-lg font-medium">
+                    {worker.name.charAt(0)}
+                  </span>
+                  <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-white rounded-full flex items-center justify-center">
+                    <div className={`w-3 h-3 rounded-full ${statusColor}`} />
                   </div>
-                )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-[#1DC6B4]">{worker.name}</div>
+                  <div className="text-sm text-gray-500 truncate">
+                    {thread.lastMessage.text}
+                  </div>
+                </div>
+                <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                  <div className="text-xs text-gray-500">{thread.lastMessage.time}</div>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
 
       {/* FAB for new message */}
