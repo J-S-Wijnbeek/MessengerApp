@@ -8,6 +8,17 @@
     created_at TIMESTAMP NOT NULL
 ); -->
 <?php
+// CORS – allow the Vite dev server and any deployed frontend to reach this endpoint
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+
+// Handle preflight request sent by browsers before cross-origin POST
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
+
 // Laad database config
 $dsn = "mysql:host=db46374.databaseasp.net;dbname=db46374;charset=utf8mb4";
 $user = getenv("DB_USER") ?: "db46374";
