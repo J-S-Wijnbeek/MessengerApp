@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
+import type { AppointmentRequest } from "../../../components/AppointmentRequestSheet";
 
-// Types
+// Type for an appointment record returned from the database
 export interface Appointment {
   id: string;
   date: string;
@@ -10,18 +11,12 @@ export interface Appointment {
   created_at: string;
 }
 
-export interface AppointmentRequest {
-  date: string;
-  time_of_day: "ochtend" | "middag" | "avond" | "geen-voorkeur";
-  notes: string;
-}
-
-
-
 export function useClientAgenda() {
   // TODO: Replace with real logged-in user once auth/profile state exists.
   const currentUserName = "Peter Hendriks";
-  const dbUrl = import.meta.env.VITE_DATABASE_URL;
+  // Default to the Netlify function path so the app works when VITE_DATABASE_URL
+  // is not explicitly set as a Netlify build-time environment variable.
+  const dbUrl = import.meta.env.VITE_DATABASE_URL ?? '/.netlify/functions/database';
 
   const [view, setView] = useState<string>("Aankomend");
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -30,25 +25,25 @@ export function useClientAgenda() {
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
 
+  const fetchAppointments = async () => {
+    try {
+      const res = await fetch(dbUrl, { method: 'GET' });
+      if (res.ok) {
+        const data = await res.json();
+        setAppointments(data);
+      }
+    } catch (e) {
+      console.warn('Kan afspraken niet ophalen:', e);
+    }
+  };
+
   // Ophalen van afspraken uit de backend
   useEffect(() => {
-    async function fetchAppointments() {
-      try {
-        const res = await fetch(dbUrl, { method: 'GET' });
-        if (res.ok) {
-          const data = await res.json();
-          setAppointments(data);
-        }
-      } catch (e) {
-        console.warn('Kan afspraken niet ophalen:', e);
-      }
-    }
     fetchAppointments();
-  }, [dbUrl]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Filter afspraken voor vandaag, later en afgelopen
-
-  // Simpele datumvergelijking (pas aan naar jouw logica)
   const todayStr = new Date().toISOString().slice(0, 10);
   const todayAppointments = appointments.filter((a) => a.date === todayStr);
   const laterAppointments = appointments.filter((a) => a.date > todayStr);
@@ -64,17 +59,14 @@ export function useClientAgenda() {
           body: JSON.stringify({
             action: 'create',
             date: request.date,
-            time_of_day: request.time_of_day,
+            // Use the camelCase field from AppointmentRequestSheet
+            time_of_day: request.timeOfDay,
             notes: request.notes,
             created_by_name: currentUserName,
           }),
         });
         if (res.ok) {
-          // Herlaad afspraken na toevoegen
-          const updated = await fetch(dbUrl, { method: 'GET' });
-          if (updated.ok) {
-            setAppointments(await updated.json());
-          }
+          await fetchAppointments();
         }
       } catch (e) {
         console.warn('Failed to save appointment request:', e);
@@ -83,6 +75,19 @@ export function useClientAgenda() {
         setIsRequestSentOpen(true);
       }
     })();
+  };
+
+  const deleteAppointment = async (id: string) => {
+    try {
+      await fetch(dbUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete', id }),
+      });
+      await fetchAppointments();
+    } catch (e) {
+      console.warn('Failed to delete appointment:', e);
+    }
   };
 
   const openSheet = () => setIsSheetOpen(true);
@@ -98,6 +103,7 @@ export function useClientAgenda() {
     laterAppointments,
     pastAppointments,
     handleAppointmentRequest,
+    deleteAppointment,
     isRequestSentOpen,
     setIsRequestSentOpen,
     lastRequest,

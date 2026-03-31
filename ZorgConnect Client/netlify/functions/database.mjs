@@ -13,9 +13,13 @@
 // Set VITE_DATABASE_URL=/.netlify/functions/database in your .env file.
 //
 // DB credentials are read from environment variables set in the Netlify UI
-// (Site settings → Environment variables).  The hardcoded fallbacks below
-// match the values already present in database.php for local development
-// convenience – replace them with real env vars before deploying to production.
+// (Site settings → Environment variables, Scope: Builds, Functions, Runtime).
+//
+//   Variable  | Required | Default (if not set) | Notes
+//   ----------|----------|----------------------|-------------------------------
+//   DB_USER   | No       | db46374              | Non-sensitive; default works
+//   DB_PASS   | Yes      | —                    | No fallback; function fails
+//                                               |   without it
 //
 // Required MySQL tables:
 //

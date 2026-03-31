@@ -14,7 +14,7 @@ export interface Message {
 export function useBerichten() {
   const location = useLocation();
   const initialChatId = location.state?.chatId || null;
-  const dbUrl = import.meta.env.VITE_DATABASE_URL;
+  const dbUrl = import.meta.env.VITE_DATABASE_URL ?? '/.netlify/functions/database';
 
   // TODO: Replace with real logged-in user once auth/profile state exists.
   const currentUserName = "Peter Hendriks";

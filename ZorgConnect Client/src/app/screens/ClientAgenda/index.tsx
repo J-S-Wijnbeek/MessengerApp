@@ -1,3 +1,4 @@
+import { Trash2 } from "lucide-react";
 import { TealHeader } from "../../components/TealHeader";
 import { ClientBottomNav } from "../../components/ClientBottomNav";
 import { PillToggle } from "../../components/PillToggle";
@@ -5,6 +6,7 @@ import { SectionBar } from "../../components/SectionBar";
 import { FAB } from "../../components/FAB";
 import { AppointmentRequestSheet } from "../../components/AppointmentRequestSheet";
 import { useClientAgenda } from "./hooks/useClientAgenda";
+import type { Appointment } from "./hooks/useClientAgenda";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,6 +28,7 @@ export default function ClientAgenda() {
     laterAppointments,
     pastAppointments,
     handleAppointmentRequest,
+    deleteAppointment,
     isRequestSentOpen,
     setIsRequestSentOpen,
     lastRequest,
@@ -42,9 +45,33 @@ export default function ClientAgenda() {
       case "geen-voorkeur":
         return "Geen voorkeur";
       default:
-        return tod;
+        return tod ?? "—";
     }
   };
+
+  const AppointmentCard = ({ apt, showDate }: { apt: Appointment; showDate?: boolean }) => (
+    <div className="px-4 py-3 border-b border-gray-100">
+      <div className="flex items-start gap-3">
+        <div className="flex-1">
+          {showDate && (
+            <div className="text-xs text-gray-500 mb-1">{apt.date}</div>
+          )}
+          <div className="font-bold text-lg mb-1">{formatTimeOfDay(apt.time_of_day)}</div>
+          {apt.notes ? (
+            <div className="text-sm text-gray-700 mb-1 italic">"{apt.notes}"</div>
+          ) : null}
+          <div className="text-xs text-gray-400">Verzoek van {apt.created_by_name}</div>
+        </div>
+        <button
+          onClick={() => deleteAppointment(apt.id)}
+          className="p-2 text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
+          title="Verwijder afspraak"
+        >
+          <Trash2 size={18} />
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-white pb-20 w-full mx-auto">
@@ -65,27 +92,7 @@ export default function ClientAgenda() {
             <>
               <SectionBar title="Vandaag" />
               {todayAppointments.map((apt) => (
-                <div key={apt.id} className="px-4 py-3 border-b border-gray-100">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-1">
-                      <div className="font-bold text-lg mb-1">{apt.time}</div>
-                      <div className="text-sm text-gray-700 mb-1">
-                        {apt.type === "call" ? "Belafspraak 📞" : "Gesprek 💬"}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-sm">
-                          {apt.staffName.charAt(0)}
-                        </div>
-                        <div className="text-sm text-gray-600">{apt.staffName}</div>
-                      </div>
-                    </div>
-                    {apt.isNow && (
-                      <button className="bg-[#1DC6B4] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#18B5A3]">
-                        Bel nu
-                      </button>
-                    )}
-                  </div>
-                </div>
+                <AppointmentCard key={apt.id} apt={apt} />
               ))}
             </>
           ) : null}
@@ -94,23 +101,7 @@ export default function ClientAgenda() {
             <>
               <SectionBar title="Later" />
               {laterAppointments.map((apt) => (
-                <div key={apt.id} className="px-4 py-3 border-b border-gray-100">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-1">
-                      <div className="text-xs text-gray-500 mb-1">{apt.date}</div>
-                      <div className="font-bold text-lg mb-1">{apt.time}</div>
-                      <div className="text-sm text-gray-700 mb-1">
-                        {apt.type === "call" ? "Belafspraak 📞" : "Gesprek 💬"}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-sm">
-                          {apt.staffName.charAt(0)}
-                        </div>
-                        <div className="text-sm text-gray-600">{apt.staffName}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <AppointmentCard key={apt.id} apt={apt} showDate />
               ))}
             </>
           ) : null}
@@ -125,23 +116,7 @@ export default function ClientAgenda() {
         <>
           {pastAppointments.length > 0 ? (
             pastAppointments.map((apt) => (
-              <div key={apt.id} className="px-4 py-3 border-b border-gray-100">
-                <div className="flex items-start gap-3">
-                  <div className="flex-1">
-                    <div className="text-xs text-gray-500 mb-1">{apt.date}</div>
-                    <div className="font-bold text-lg mb-1">{apt.time}</div>
-                    <div className="text-sm text-gray-700 mb-1">
-                      {apt.type === "call" ? "Belafspraak 📞" : "Gesprek 💬"}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-sm">
-                        {apt.staffName.charAt(0)}
-                      </div>
-                      <div className="text-sm text-gray-600">{apt.staffName}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <AppointmentCard key={apt.id} apt={apt} showDate />
             ))
           ) : (
             <div className="text-center text-gray-400 py-12">
