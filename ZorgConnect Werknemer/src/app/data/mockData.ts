@@ -49,6 +49,26 @@ export const mockStaff = [
     clients: 9,
     maxClients: 10,
   },
+  {
+    id: 6,
+    name: "Nikki Nijboer",
+    role: "Verpleegkundige",
+    status: "beschikbaar" as const,
+    distance: "2.0km",
+    time: "8min",
+    clients: 4,
+    maxClients: 10,
+  },
+  {
+    id: 7,
+    name: "Ekin Kuru",
+    role: "Verpleegkundige",
+    status: "achterwacht" as const,
+    distance: "3.1km",
+    time: "11min",
+    clients: 6,
+    maxClients: 10,
+  },
 ];
 
 export const mockClients = [
