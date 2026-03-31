@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import agendaData from "../../../../Database/data.json";
+import { useEffect, useMemo, useState } from "react";
+import { mockAppointments } from "../../../data/mockData";
 
 // Types
 export interface Appointment {
@@ -30,23 +30,17 @@ function isAppointment(obj: any): obj is Appointment {
     typeof obj.isNow === "boolean";
 }
 
-// Haal afspraken uit localStorage, of uit data.json als localStorage leeg is
-function getStoredAppointments(): Appointment[] {
-  const stored = localStorage.getItem("appointments");
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed) && parsed.every(isAppointment)) return parsed;
-      if (parsed && Array.isArray(parsed.appointments) && parsed.appointments.every(isAppointment)) return parsed.appointments;
-    } catch {
-      // fallback op data.json
-    }
-  }
-  // Always return a valid array
-  return Array.isArray(agendaData.appointments) && agendaData.appointments.every(isAppointment)
-    ? agendaData.appointments
-    : [];
-}
+type MockAppointment = (typeof mockAppointments)[number];
+
+const mapMockAppointmentToAgendaAppointment = (a: MockAppointment): Appointment => ({
+  id: a.id,
+  date: a.date,
+  time: a.time,
+  type: a.type === "gesprek" ? "meeting" : "call",
+  staffName: a.staffName,
+  isPast: a.isPast,
+  isNow: a.isNow,
+});
 
 export function useClientAgenda() {
   // TODO: Replace with real logged-in user once auth/profile state exists.
@@ -56,9 +50,12 @@ export function useClientAgenda() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isRequestSentOpen, setIsRequestSentOpen] = useState(false);
   const [lastRequest, setLastRequest] = useState<AppointmentRequest | null>(null);
-  const [appointments, setAppointments] = useState<Appointment[]>(getStoredAppointments());
+  const appointments = useMemo(
+    () => mockAppointments.map(mapMockAppointmentToAgendaAppointment),
+    [],
+  );
 
-  // Sla afspraken op in localStorage bij elke wijziging
+  // Keep writing to localStorage for potential later use, but don't read from it.
   useEffect(() => {
     localStorage.setItem("appointments", JSON.stringify(appointments));
   }, [appointments]);
