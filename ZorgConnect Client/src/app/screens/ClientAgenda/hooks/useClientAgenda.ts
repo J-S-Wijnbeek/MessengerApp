@@ -1,20 +1,74 @@
-import { useState } from "react";
-import { mockAppointments } from "../../../data/mockData";
-import { AppointmentRequest } from "../../../components/AppointmentRequestSheet";
+import { useEffect, useState } from "react";
+import agendaData from "../../../../Database/data.json";
+
+// Types
+export interface Appointment {
+  id: number;
+  date: string;
+  time: string;
+  type: "call" | "meeting";
+  staffName: string;
+  isPast: boolean;
+  isNow: boolean;
+}
+
+export interface AppointmentRequest {
+  date: string;
+  timeOfDay: "ochtend" | "middag" | "avond" | "geen-voorkeur";
+  notes: string;
+}
+
+// Haal afspraken uit localStorage, of uit data.json als localStorage leeg is
+function getStoredAppointments(): Appointment[] {
+  const stored = localStorage.getItem("appointments");
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) return parsed;
+    } catch {
+      // fallback op data.json
+    }
+  }
+  return agendaData.appointments ?? [];
+}
 
 export function useClientAgenda() {
+  const [appointments, setAppointments] = useState<Appointment[]>(getStoredAppointments());
   const [view, setView] = useState<string>("Aankomend");
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState<boolean>(false);
 
-  const todayAppointments = mockAppointments.filter((a) => a.date === "Vandaag");
-  const laterAppointments = mockAppointments.filter((a) => a.date !== "Vandaag");
-  const pastAppointments = mockAppointments.filter((a) => a.isPast);
+  // Sla afspraken op in localStorage bij elke wijziging
+  useEffect(() => {
+    localStorage.setItem("appointments", JSON.stringify(appointments));
+  }, [appointments]);
 
+  // Filter afspraken voor vandaag, later en afgelopen
+  const todayAppointments = appointments.filter(
+    (a) => a.date === "Vandaag" && !a.isPast
+  );
+  const laterAppointments = appointments.filter(
+    (a) => a.date !== "Vandaag" && !a.isPast
+  );
+  const pastAppointments = appointments.filter((a) => a.isPast);
+
+  // Voeg nieuwe afspraak toe vanuit AppointmentRequestSheet
   const handleAppointmentRequest = (request: AppointmentRequest) => {
-    console.log("Appointment request:", request);
-    alert(
-      `Afspraakverzoek verstuurd!\nDatum: ${request.date}\nDagdeel: ${request.timeOfDay}\nNotities: ${request.notes || "Geen"}`
-    );
+    // Zet dagdeel om naar een tijd (voorbeeld: ochtend = 09:00, middag = 13:00, avond = 18:00)
+    let time = "09:00";
+    if (request.timeOfDay === "middag") time = "13:00";
+    if (request.timeOfDay === "avond") time = "18:00";
+    if (request.timeOfDay === "geen-voorkeur") time = "09:00";
+
+    const newAppointment: Appointment = {
+      id: Date.now(),
+      date: request.date,
+      time,
+      type: "call", // default type, pas aan indien nodig
+      staffName: "Onbekend", // default naam, pas aan indien nodig
+      isPast: false,
+      isNow: false,
+    };
+    setAppointments((prev) => [...prev, newAppointment]);
   };
 
   const openSheet = () => setIsSheetOpen(true);
