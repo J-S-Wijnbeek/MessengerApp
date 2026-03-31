@@ -57,7 +57,7 @@ export default function SOSScreen() {
 
           <button
             onClick={closeEmergency}
-            className="w-full border-2 border-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+            className="w-fit border-2 border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors"
           >
             Sluiten
           </button>
@@ -110,7 +110,7 @@ export default function SOSScreen() {
               </button>
               <button
                 onClick={cancelVerification}
-                className="w-full border-2 border-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                className="w-fit border-2 border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors"
               >
                 Nee, annuleren
               </button>
@@ -143,7 +143,7 @@ export default function SOSScreen() {
 
         <button
           onClick={cancelSOS}
-          className="w-full border-2 border-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+          className="w-fit border-2 border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors"
         >
           Annuleren
         </button>

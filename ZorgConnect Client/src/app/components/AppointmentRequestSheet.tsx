@@ -49,10 +49,20 @@ const getStatusColors = (status: StaffStatus) => {
 
 type SlotCategory = "green" | "orange" | "gray";
 
-const getSlotCategory = (availableCount: number, isPreferred: boolean): SlotCategory => {
+const getSlotCategory = (
+  availableCount: number,
+  slot: "ochtend" | "middag" | "avond",
+  selectedTimeOfDay: "ochtend" | "middag" | "avond" | "geen-voorkeur",
+): SlotCategory => {
   if (availableCount <= 0) return "gray";
-  if (isPreferred) return "green";
-  return "orange";
+
+  if (selectedTimeOfDay === "geen-voorkeur") {
+    // Geen voorkeur: alle blokken groen (als er beschikbaarheid is)
+    return "green";
+  }
+
+  // Specifiek dagdeel: gekozen blok groen, rest oranje (als er beschikbaarheid is)
+  return slot === selectedTimeOfDay ? "green" : "orange";
 };
 
 const getSlotCardColors = (category: SlotCategory) => {
@@ -391,14 +401,11 @@ export function AppointmentRequestSheet({
                 {/* Ochtend */}
                 {(() => {
                   const slot = selectedDateAvailability.ochtend;
-                  const isPreferred = timeOfDay === "ochtend";
-                  const category = getSlotCategory(slot.available, isPreferred);
+                  const category = getSlotCategory(slot.available, "ochtend", timeOfDay);
                   const colors = getSlotCardColors(category);
                   return (
                     <div
-                      className={`p-3 rounded-lg border ${colors.card} ${
-                        isPreferred ? "ring-2 ring-green-400 ring-inset border-green-400" : ""
-                      }`}
+                      className={`p-3 rounded-lg border ${colors.card}`}
                     >
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm text-gray-700 font-medium">Ochtend (08:00-12:00)</span>
@@ -432,14 +439,11 @@ export function AppointmentRequestSheet({
                 {/* Middag */}
                 {(() => {
                   const slot = selectedDateAvailability.middag;
-                  const isPreferred = timeOfDay === "middag";
-                  const category = getSlotCategory(slot.available, isPreferred);
+                  const category = getSlotCategory(slot.available, "middag", timeOfDay);
                   const colors = getSlotCardColors(category);
                   return (
                     <div
-                      className={`p-3 rounded-lg border ${colors.card} ${
-                        isPreferred ? "ring-2 ring-green-400 ring-inset border-green-400" : ""
-                      }`}
+                      className={`p-3 rounded-lg border ${colors.card}`}
                     >
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm text-gray-700 font-medium">Middag (12:00-18:00)</span>
@@ -473,14 +477,11 @@ export function AppointmentRequestSheet({
                 {/* Avond */}
                 {(() => {
                   const slot = selectedDateAvailability.avond;
-                  const isPreferred = timeOfDay === "avond";
-                  const category = getSlotCategory(slot.available, isPreferred);
+                  const category = getSlotCategory(slot.available, "avond", timeOfDay);
                   const colors = getSlotCardColors(category);
                   return (
                     <div
-                      className={`p-3 rounded-lg border ${colors.card} ${
-                        isPreferred ? "ring-2 ring-green-400 ring-inset border-green-400" : ""
-                      }`}
+                      className={`p-3 rounded-lg border ${colors.card}`}
                     >
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm text-gray-700 font-medium">Avond (18:00-22:00)</span>

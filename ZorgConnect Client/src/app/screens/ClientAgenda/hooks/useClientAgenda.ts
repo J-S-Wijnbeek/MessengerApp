@@ -5,6 +5,8 @@ import { AppointmentRequest } from "../../../components/AppointmentRequestSheet"
 export function useClientAgenda() {
   const [view, setView] = useState<string>("Aankomend");
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isRequestSentOpen, setIsRequestSentOpen] = useState(false);
+  const [lastRequest, setLastRequest] = useState<AppointmentRequest | null>(null);
 
   const todayAppointments = mockAppointments.filter((a) => a.date === "Vandaag");
   const laterAppointments = mockAppointments.filter((a) => a.date !== "Vandaag");
@@ -12,9 +14,8 @@ export function useClientAgenda() {
 
   const handleAppointmentRequest = (request: AppointmentRequest) => {
     console.log("Appointment request:", request);
-    alert(
-      `Afspraakverzoek verstuurd!\nDatum: ${request.date}\nDagdeel: ${request.timeOfDay}\nNotities: ${request.notes || "Geen"}`
-    );
+    setLastRequest(request);
+    setIsRequestSentOpen(true);
   };
 
   const openSheet = () => setIsSheetOpen(true);
@@ -30,5 +31,8 @@ export function useClientAgenda() {
     laterAppointments,
     pastAppointments,
     handleAppointmentRequest,
+    isRequestSentOpen,
+    setIsRequestSentOpen,
+    lastRequest,
   };
 }
