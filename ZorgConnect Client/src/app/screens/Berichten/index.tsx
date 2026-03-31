@@ -5,17 +5,21 @@ import { mockCoupledCareWorkers } from "../../data/mockData";
 import { Send, ArrowLeft, X, Plus, Search, AlertCircle } from "lucide-react";
 import { useBerichten } from "./hooks/useBerichten";
 
+const formatTime = (sent_at: string) =>
+  new Date(sent_at).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" });
+
 export default function Berichten() {
   const {
     selectedChat,
     message,
     setMessage,
+    messages,
+    sendMessage,
     showNewChatSheet,
     searchQuery,
     setSearchQuery,
     showUnavailableAlert,
     setShowUnavailableAlert,
-    mockMessages,
     filteredCareWorkers,
     availableStaff,
     selectedStaffMember,
@@ -27,6 +31,10 @@ export default function Berichten() {
     closeNewChatSheet,
     startChat,
   } = useBerichten();
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") sendMessage();
+  };
 
   if (selectedChat) {
     const chatSuggestions = [
@@ -95,29 +103,35 @@ export default function Berichten() {
 
         {/* Chat Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
-          {mockMessages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex ${msg.sender === "client" ? "justify-end" : "justify-start"}`}
-            >
+          {messages.length === 0 ? (
+            <div className="text-center text-gray-400 py-8">
+              Nog geen berichten. Stuur een bericht om te beginnen.
+            </div>
+          ) : (
+            messages.map((msg) => (
               <div
-                className={`max-w-[75%] rounded-2xl px-4 py-2 ${
-                  msg.sender === "client"
-                    ? "bg-[#F5A623] text-white"
-                    : "bg-gray-200 text-gray-900"
-                }`}
+                key={msg.id}
+                className={`flex ${msg.sender === "client" ? "justify-end" : "justify-start"}`}
               >
-                <div>{msg.text}</div>
                 <div
-                  className={`text-xs mt-1 ${
-                    msg.sender === "client" ? "text-white/80" : "text-gray-500"
+                  className={`max-w-[75%] rounded-2xl px-4 py-2 ${
+                    msg.sender === "client"
+                      ? "bg-[#F5A623] text-white"
+                      : "bg-gray-200 text-gray-900"
                   }`}
                 >
-                  {msg.time}
+                  <div>{msg.text}</div>
+                  <div
+                    className={`text-xs mt-1 ${
+                      msg.sender === "client" ? "text-white/80" : "text-gray-500"
+                    }`}
+                  >
+                    {formatTime(msg.sent_at)}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
         {/* Input Bar */}
@@ -146,10 +160,14 @@ export default function Berichten() {
               type="text"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={handleKeyDown}
               placeholder="Typ een bericht..."
               className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#F5A623]"
             />
-            <button className="w-10 h-10 bg-[#1DC6B4] text-white rounded-full flex items-center justify-center hover:bg-[#18B5A3] transition-colors">
+            <button
+              onClick={sendMessage}
+              className="w-10 h-10 bg-[#1DC6B4] text-white rounded-full flex items-center justify-center hover:bg-[#18B5A3] transition-colors"
+            >
               <Send size={20} />
             </button>
           </div>
