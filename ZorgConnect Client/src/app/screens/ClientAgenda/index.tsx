@@ -45,7 +45,7 @@ export default function ClientAgenda() {
       case "geen-voorkeur":
         return "Geen voorkeur";
       default:
-        return tod ?? "—";
+        return tod ?? "Onbekend";
     }
   };
 

@@ -58,6 +58,14 @@ export async function handler(event) {
 
   let connection;
   try {
+    if (!process.env.DB_PASS) {
+      console.error('DB_PASS environment variable is not set');
+      return {
+        statusCode: 500,
+        headers: CORS_HEADERS,
+        body: JSON.stringify({ error: 'Server configuration error: database password not set.' }),
+      };
+    }
     connection = await mysql.createConnection({
       host: 'db46374.databaseasp.net',
       database: 'db46374',

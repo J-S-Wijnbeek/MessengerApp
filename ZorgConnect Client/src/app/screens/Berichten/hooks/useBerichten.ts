@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLocation } from "react-router";
 import { mockCoupledCareWorkers } from "../../../data/mockData";
+import { DB_URL } from "../../../config";
 
 export interface Message {
   id: string;
@@ -14,8 +15,6 @@ export interface Message {
 export function useBerichten() {
   const location = useLocation();
   const initialChatId = location.state?.chatId || null;
-  const dbUrl = import.meta.env.VITE_DATABASE_URL ?? '/.netlify/functions/database';
-
   // TODO: Replace with real logged-in user once auth/profile state exists.
   const currentUserName = "Peter Hendriks";
 
@@ -28,9 +27,8 @@ export function useBerichten() {
 
   const loadMessages = useCallback(
     async (staffId: number) => {
-      if (!dbUrl) return;
       try {
-        const res = await fetch(`${dbUrl}?resource=messages&staff_id=${staffId}`);
+        const res = await fetch(`${DB_URL}?resource=messages&staff_id=${staffId}`);
         if (res.ok) {
           const data: Message[] = await res.json();
           setMessages(data);
@@ -39,7 +37,7 @@ export function useBerichten() {
         console.warn("Kan berichten niet ophalen:", e);
       }
     },
-    [dbUrl]
+    []
   );
 
   // Load messages whenever the active chat changes
@@ -52,11 +50,11 @@ export function useBerichten() {
   }, [selectedChat, loadMessages]);
 
   const sendMessage = async () => {
-    if (!message.trim() || selectedChat === null || !dbUrl) return;
+    if (!message.trim() || selectedChat === null) return;
     const text = message.trim();
     setMessage("");
     try {
-      const res = await fetch(dbUrl, {
+      const res = await fetch(DB_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -78,9 +76,8 @@ export function useBerichten() {
   };
 
   const deleteMessage = async (id: string) => {
-    if (!dbUrl) return;
     try {
-      await fetch(dbUrl, {
+      await fetch(DB_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ resource: "messages", action: "delete", id }),

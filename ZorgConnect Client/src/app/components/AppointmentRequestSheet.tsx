@@ -93,7 +93,11 @@ export function AppointmentRequestSheet({
   const [timeOfDay, setTimeOfDay] = useState<"ochtend" | "middag" | "avond" | "geen-voorkeur">("geen-voorkeur");
   const [date, setDate] = useState("");
   const [notes, setNotes] = useState("");
-  const [currentMonth, setCurrentMonth] = useState(new Date(2026, 2)); // March 2026
+  // Start the calendar on the current month, not a hardcoded month
+  const [currentMonth, setCurrentMonth] = useState(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth());
+  });
 
   // Get availability status for a date
   const getDateAvailability = (dateStr: string) => {
@@ -142,7 +146,9 @@ export function AppointmentRequestSheet({
     }
 
     // Add days of the month
-    const today = new Date(2026, 2, 30); // March 30, 2026
+    // Use today at midnight so same-day dates are not marked as past
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     for (let day = 1; day <= daysInMonth; day++) {
       const currentDate = new Date(year, month, day);
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -167,11 +173,6 @@ export function AppointmentRequestSheet({
   const handleSubmit = () => {
     if (!date) {
       alert("Selecteer een datum");
-      return;
-    }
-    const availability = getDateAvailability(date);
-    if (availability === "none") {
-      alert("Deze datum heeft geen beschikbaarheid voor het gekozen dagdeel");
       return;
     }
     onSubmit({ date, timeOfDay, notes });
