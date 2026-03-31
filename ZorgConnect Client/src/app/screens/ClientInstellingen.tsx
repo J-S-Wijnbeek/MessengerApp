@@ -10,7 +10,11 @@ export default function ClientInstellingen() {
   const navigate = useNavigate();
   const [berichtenNotif, setBerichtenNotif] = useState(true);
   const [afsprakenNotif, setAfsprakenNotif] = useState(true);
-  const [sosBevestiging, setSosBevestiging] = useState(true);
+  const [sosBevestiging, setSosBevestiging] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
+    const stored = window.localStorage.getItem("showSosButton");
+    return stored === null ? true : stored === "true";
+  });
   const [faceId, setFaceId] = useState(false);
   const [groteTekst, setGroteTekst] = useState(false);
   const [hoogContrast, setHoogContrast] = useState(false);
@@ -83,9 +87,21 @@ export default function ClientInstellingen() {
         </button>
       </div>
       <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-        <div className="text-gray-900">SOS bevestiging</div>
+        <div className="flex flex-col w-3/4">
+          <span className="text-gray-900">SOS-knop tonen</span>
+          <span className="text-xs text-gray-500">
+            Schakel de SOS-snelknop in de navigatiebalk onderin aan of uit. Bij het verzenden van de oproep wordt er een locatie meegegeven.
+          </span>
+        </div>
         <button
-          onClick={() => setSosBevestiging(!sosBevestiging)}
+          onClick={() => {
+            const next = !sosBevestiging;
+            setSosBevestiging(next);
+            if (typeof window !== "undefined") {
+              window.localStorage.setItem("showSosButton", String(next));
+              window.dispatchEvent(new Event("sos-settings-changed"));
+            }
+          }}
           className={`w-12 h-7 rounded-full transition-colors ${
             sosBevestiging ? "bg-[#F5A623]" : "bg-gray-300"
           }`}

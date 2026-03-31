@@ -1,13 +1,29 @@
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router";
-import { Home, MessageCircle, Calendar, Settings } from "lucide-react";
+import { Home, MessageCircle, Calendar, Settings, Siren } from "lucide-react";
 
 export function ClientBottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [showSosButton, setShowSosButton] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
+    const stored = window.localStorage.getItem("showSosButton");
+    return stored === null ? true : stored === "true";
+  });
+
+  useEffect(() => {
+    const handleChange = () => {
+      const stored = window.localStorage.getItem("showSosButton");
+      setShowSosButton(stored === null ? true : stored === "true");
+    };
+    window.addEventListener("sos-settings-changed", handleChange);
+    return () => window.removeEventListener("sos-settings-changed", handleChange);
+  }, []);
 
   const navItems = [
     { icon: Home, label: "Home", path: "/home" },
     { icon: MessageCircle, label: "Berichten", path: "/berichten" },
+    ...(showSosButton ? [{ icon: Siren, label: "SOS", path: "/sos" as const }] : []),
     { icon: Calendar, label: "Agenda", path: "/agenda" },
     { icon: Settings, label: "Meer", path: "/instellingen" },
   ];

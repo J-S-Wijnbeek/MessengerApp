@@ -8,6 +8,7 @@ export default function SOSScreen() {
   const [isPressing, setIsPressing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isEmergencySent, setIsEmergencySent] = useState(false);
+  const [showVerification, setShowVerification] = useState(false);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -15,11 +16,11 @@ export default function SOSScreen() {
       interval = setInterval(() => {
         setProgress((prev) => {
           if (prev >= 100) {
-            setIsEmergencySent(true);
             setIsPressing(false);
+            setShowVerification(true); // eerst verificatie tonen
             return 100;
           }
-          return prev + (100 / 30); // 3 seconds = 30 intervals of 100ms
+          return prev + 100 / 30; // 3 seconden = 30 intervallen van 100ms
         });
       }, 100);
     } else {
@@ -103,17 +104,55 @@ export default function SOSScreen() {
           Noodmelding versturen?
         </h2>
 
-        <p className="text-gray-600 text-center mb-8">
-          Houd de knop 3 seconden ingedrukt om een noodmelding te versturen naar de dichtstbijzijnde beschikbare medewerker.
+        <p className="text-gray-600 text-center mb-6">
+          Houd de knop 3 seconden ingedrukt om een noodmelding te starten. Daarna vragen we je nog één keer om te bevestigen.
         </p>
 
-        {/* Press and Hold Button */}
+        {/* Verificatiekaart nadat lang genoeg is ingedrukt */}
+        {showVerification && (
+          <div className="w-full max-w-md border-2 border-[#F5A623] rounded-lg p-4 mb-6 bg-[#FFF9EC]">
+            <h3 className="font-bold text-lg text-gray-900 mb-2 text-center">
+              Bevestig noodmelding
+            </h3>
+            <p className="text-sm text-gray-700 mb-4 text-center">
+              Weet je zeker dat je een noodmelding wilt versturen naar je zorgteam?
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => {
+                  setShowVerification(false);
+                  setIsEmergencySent(true);
+                }}
+                className="w-full bg-[#D9534F] text-white py-3 rounded-lg font-semibold hover:bg-[#C64541] transition-colors"
+              >
+                Ja, verstuur noodmelding
+              </button>
+              <button
+                onClick={() => {
+                  setShowVerification(false);
+                  setProgress(0);
+                }}
+                className="w-full border-2 border-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+              >
+                Nee, annuleren
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Ingedrukt-houden knop */}
         <div className="relative mb-6">
           <button
-            onMouseDown={() => setIsPressing(true)}
+            onMouseDown={() => {
+              setIsPressing(true);
+              setShowVerification(false);
+            }}
             onMouseUp={() => setIsPressing(false)}
             onMouseLeave={() => setIsPressing(false)}
-            onTouchStart={() => setIsPressing(true)}
+            onTouchStart={() => {
+              setIsPressing(true);
+              setShowVerification(false);
+            }}
             onTouchEnd={() => setIsPressing(false)}
             className="w-64 bg-[#F5A623] text-white py-6 rounded-lg font-bold text-lg hover:bg-[#E69510] transition-colors relative overflow-hidden"
           >
@@ -122,7 +161,7 @@ export default function SOSScreen() {
               style={{ width: `${progress}%` }}
             />
             <span className="relative z-10 flex items-center justify-center gap-2">
-              🚨 Stuur Noodmelding
+              🚨 Houd ingedrukt
             </span>
           </button>
           {isPressing && (
