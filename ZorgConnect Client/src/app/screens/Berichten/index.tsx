@@ -28,6 +28,12 @@ export default function Berichten() {
   } = useBerichten();
 
   if (selectedChat) {
+    const chatSuggestions = [
+      "Hoi, heb je even tijd om te bellen?",
+      "Ik voel mij niet goed.",
+      "Zou je me kunnen helpen met iets?",
+    ];
+
     return (
       <div className="min-h-screen bg-white flex flex-col pb-20 w-full mx-auto">
         <div className="bg-[#F5A623] text-white text-center py-4 px-4 flex items-center justify-center relative">
@@ -115,6 +121,25 @@ export default function Berichten() {
 
         {/* Input Bar */}
         <div className="border-t border-gray-200 p-4 bg-white">
+          {/* Suggestions */}
+          <div
+            className="mb-3 -mx-1 overflow-x-auto [&::-webkit-scrollbar]:hidden"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            <div className="flex gap-2 px-1">
+              {chatSuggestions.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setMessage(s)}
+                  className="shrink-0 rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="flex items-center gap-2">
             <input
               type="text"

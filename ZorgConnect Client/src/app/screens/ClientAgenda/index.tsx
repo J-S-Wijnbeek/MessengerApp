@@ -5,6 +5,15 @@ import { SectionBar } from "../../components/SectionBar";
 import { FAB } from "../../components/FAB";
 import { AppointmentRequestSheet } from "../../components/AppointmentRequestSheet";
 import { useClientAgenda } from "./hooks/useClientAgenda";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../components/ui/alert-dialog";
 
 export default function ClientAgenda() {
   const {
@@ -17,7 +26,25 @@ export default function ClientAgenda() {
     laterAppointments,
     pastAppointments,
     handleAppointmentRequest,
+    isRequestSentOpen,
+    setIsRequestSentOpen,
+    lastRequest,
   } = useClientAgenda();
+
+  const formatTimeOfDay = (tod: string) => {
+    switch (tod) {
+      case "ochtend":
+        return "Ochtend";
+      case "middag":
+        return "Middag";
+      case "avond":
+        return "Avond";
+      case "geen-voorkeur":
+        return "Geen voorkeur";
+      default:
+        return tod;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white pb-20 w-full mx-auto">
@@ -130,6 +157,45 @@ export default function ClientAgenda() {
         onClose={closeSheet}
         onSubmit={handleAppointmentRequest}
       />
+      <AlertDialog open={isRequestSentOpen} onOpenChange={setIsRequestSentOpen}>
+        <AlertDialogContent className="border-0 p-0 overflow-hidden">
+          <div className="bg-[#1DC6B4] text-white px-6 py-5">
+            <AlertDialogHeader className="text-left">
+              <AlertDialogTitle className="text-white">Afspraakverzoek verstuurd</AlertDialogTitle>
+              <AlertDialogDescription className="text-white/90">
+                We hebben je aanvraag ontvangen en nemen dit zo snel mogelijk in behandeling.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+          </div>
+
+          <div className="px-6 py-5">
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-2 text-sm">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-gray-500">Datum</span>
+                <span className="font-medium text-gray-900">{lastRequest?.date ?? "-"}</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-gray-500">Dagdeel</span>
+                <span className="font-medium text-gray-900">
+                  {lastRequest ? formatTimeOfDay(lastRequest.timeOfDay) : "-"}
+                </span>
+              </div>
+              <div className="pt-2 border-t border-gray-200">
+                <div className="text-gray-500 mb-1">Notities</div>
+                <div className="text-gray-900">
+                  {lastRequest?.notes?.trim() ? lastRequest.notes : "Geen"}
+                </div>
+              </div>
+            </div>
+
+            <AlertDialogFooter className="mt-5">
+              <AlertDialogAction className="w-full bg-[#1DC6B4] hover:bg-[#18B5A3] text-white">
+                Oké
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
       <ClientBottomNav />
     </div>
   );
