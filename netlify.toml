@@ -1,0 +1,19 @@
+[build]
+  # Sub-directory that contains the React app and its serverless functions
+  base      = "ZorgConnect Client"
+  command   = "npm install && npm run build"
+  publish   = "dist"
+  functions = "netlify/functions"
+
+[dev]
+  # `netlify dev` forwards Vite on :5173 and wraps it at :8888,
+  # making /.netlify/functions/* available alongside the React dev server.
+  command    = "npm run dev"
+  targetPort = 5173
+  port       = 8888
+
+# SPA fallback – all non-asset routes serve index.html
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
