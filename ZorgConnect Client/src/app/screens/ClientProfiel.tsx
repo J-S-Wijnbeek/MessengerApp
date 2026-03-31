@@ -8,7 +8,7 @@ export default function ClientProfiel() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-white pb-20 max-w-[390px] mx-auto">
+    <div className="min-h-screen bg-white pb-20 w-full mx-auto">
       <div className="bg-[#F5A623] text-white text-center py-4 px-4 flex items-center justify-center relative">
         <button
           onClick={() => navigate("/instellingen")}

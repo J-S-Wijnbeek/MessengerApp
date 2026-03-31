@@ -24,7 +24,7 @@ export default function ClientAgenda() {
   const pastAppointments = mockAppointments.filter((a) => a.isPast);
 
   return (
-    <div className="min-h-screen bg-white pb-20 max-w-[390px] mx-auto">
+    <div className="min-h-screen bg-white pb-20 w-full mx-auto">
       <TealHeader title="Mijn Agenda" />
 
       {/* Pill Toggle */}
