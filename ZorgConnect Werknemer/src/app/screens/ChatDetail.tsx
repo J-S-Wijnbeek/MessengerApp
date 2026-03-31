@@ -1,18 +1,23 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router";
-import { ArrowLeft, Send, Info } from "lucide-react";
+import { ArrowLeft, Send, Info, Check } from "lucide-react";
+import { io } from "socket.io-client";
 import { mockLinkedClientsDetailed, mockChatMessages } from "../data/mockData";
+
+const socket = io("http://localhost:3001");
 
 export default function ChatDetail() {
   const { clientId } = useParams();
   const navigate = useNavigate();
   const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState(
+    () => mockChatMessages[Number(clientId) || 0] || []
+  );
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const client = mockLinkedClientsDetailed.find(
     (c) => c.id === Number(clientId)
   );
-  const messages = mockChatMessages[Number(clientId) || 0] || [];
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -20,7 +25,33 @@ export default function ChatDetail() {
 
   useEffect(() => {
     scrollToBottom();
-  }, []);
+  }, [messages]);
+
+  useEffect(() => {
+    if (!clientId) return;
+
+    const handleHistory = ({ chatId, history }: any) => {
+      if (chatId !== clientId) return;
+      setMessages((prev) => (history.length > 0 ? history : prev));
+    };
+
+    const handleIncoming = (msg: any) => {
+      if (msg.chatId !== clientId) return;
+      setMessages((prev) =>
+        prev.some((existing) => existing.id === msg.id) ? prev : [...prev, msg]
+      );
+    };
+
+    socket.emit("join_chat", clientId);
+    socket.emit("read_chat", { chatId: clientId, readerType: "staff" });
+    socket.on("chat_history", handleHistory);
+    socket.on("chat_message", handleIncoming);
+
+    return () => {
+      socket.off("chat_history", handleHistory);
+      socket.off("chat_message", handleIncoming);
+    };
+  }, [clientId]);
 
   if (!client) {
     return (
@@ -32,7 +63,20 @@ export default function ChatDetail() {
 
   const handleSend = () => {
     if (message.trim()) {
-      // In a real app, this would send the message
+      const msg = {
+        id: Date.now(),
+        chatId: clientId || "unknown",
+        senderId: 0,
+        senderType: "staff" as const,
+        message: message.trim(),
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        read: false,
+      };
+      setMessages((prev) => [...prev, msg]);
+      socket.emit("chat_message", msg);
       setMessage("");
     }
   };

@@ -1,10 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { io } from "socket.io-client";
 import { TealHeader } from "../components/TealHeader";
 import { ClientBottomNav } from "../components/ClientBottomNav";
 import { FAB } from "../components/FAB";
 import { mockClients, mockCoupledCareWorkers } from "../data/mockData";
-import { Send, ArrowLeft, X, Plus, Search, AlertCircle } from "lucide-react";
+import { Send, ArrowLeft, X, Plus, Search, AlertCircle, Check } from "lucide-react";
 import { useLocation } from "react-router";
+
+const socket = io("http://localhost:3001");
+
+const initialMockMessages = [
+  { id: 1, message: "Hallo, hoe gaat het met je?", senderType: "staff", time: "14:20", chatId: "1", read: true },
+  { id: 2, message: "Het gaat goed, dank je!", senderType: "client", time: "14:25", chatId: "1", read: false },
+  { id: 3, message: "Fijn om te horen. Heb je nog vragen?", senderType: "staff", time: "14:28", chatId: "1", read: true },
+  { id: 4, message: "Dank je wel voor het gesprek vandaag", senderType: "client", time: "14:30", chatId: "1", read: false },
+];
 
 export default function Berichten() {
   const location = useLocation();
@@ -12,20 +22,67 @@ export default function Berichten() {
   
   const [selectedChat, setSelectedChat] = useState<number | null>(initialChatId);
   const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState(initialMockMessages);
   const [showNewChatSheet, setShowNewChatSheet] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showUnavailableAlert, setShowUnavailableAlert] = useState(true); // Demo: show on first load
 
-  const mockMessages = [
-    { id: 1, text: "Hallo, hoe gaat het met je?", sender: "staff", time: "14:20" },
-    { id: 2, text: "Het gaat goed, dank je!", sender: "client", time: "14:25" },
-    { id: 3, text: "Fijn om te horen. Heb je nog vragen?", sender: "staff", time: "14:28" },
-    { id: 4, text: "Dank je wel voor het gesprek vandaag", sender: "client", time: "14:30" },
-  ];
 
   const filteredCareWorkers = mockCoupledCareWorkers.filter((worker) =>
     worker.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  useEffect(() => {
+    const handleHistory = ({ chatId, history }: any) => {
+      if (!selectedChat || chatId !== selectedChat.toString()) return;
+      setMessages(history);
+    };
+
+    const handleIncoming = (msg: any) => {
+      if (!selectedChat || msg.chatId !== selectedChat.toString()) return;
+      setMessages((prev) =>
+        prev.some((existing) => existing.id === msg.id) ? prev : [...prev, msg]
+      );
+    };
+
+    socket.on("chat_history", handleHistory);
+    socket.on("chat_message", handleIncoming);
+    return () => {
+      socket.off("chat_history", handleHistory);
+      socket.off("chat_message", handleIncoming);
+    };
+  }, [selectedChat]);
+
+  useEffect(() => {
+    if (!selectedChat) return;
+    const chatId = selectedChat.toString();
+    socket.emit("join_chat", chatId);
+    socket.emit("read_chat", { chatId, readerType: "client" });
+  }, [selectedChat]);
+
+  const activeMessages = selectedChat
+    ? messages.filter((msg) => msg.chatId === selectedChat.toString())
+    : [];
+
+  const handleSend = () => {
+    if (!message.trim() || selectedChat === null) return;
+
+    const msg = {
+      id: Date.now(),
+      chatId: selectedChat.toString(),
+      senderType: "client" as const,
+      message: message.trim(),
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      read: false,
+    };
+
+    setMessages((prev) => [...prev, msg]);
+    socket.emit("chat_message", msg);
+    setMessage("");
+  };
 
   // Get available staff members (both coupled and others)
   const availableStaff = mockCoupledCareWorkers.filter(
@@ -99,25 +156,29 @@ export default function Berichten() {
 
         {/* Chat Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
-          {mockMessages.map((msg) => (
+          {activeMessages.map((msg) => (
             <div
               key={msg.id}
-              className={`flex ${msg.sender === "client" ? "justify-end" : "justify-start"}`}
+              className={`flex ${msg.senderType === "client" ? "justify-end" : "justify-start"}`}
             >
               <div
                 className={`max-w-[75%] rounded-2xl px-4 py-2 ${
-                  msg.sender === "client"
+                  msg.senderType === "client"
                     ? "bg-[#F5A623] text-white"
                     : "bg-gray-200 text-gray-900"
                 }`}
               >
-                <div>{msg.text}</div>
-                <div
-                  className={`text-xs mt-1 ${
-                    msg.sender === "client" ? "text-white/80" : "text-gray-500"
-                  }`}
-                >
-                  {msg.time}
+                <div>{msg.message}</div>
+                <div className="flex items-center gap-2 mt-1 text-xs">
+                  <span className={msg.senderType === "client" ? "text-white/80" : "text-gray-500"}>
+                    {msg.time}
+                  </span>
+                  {msg.senderType === "client" && (
+                    <span className="flex items-center gap-1 text-white/60">
+                      <Check size={12} />
+                      {msg.read ? "Gelezen" : "Verstuurd"}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -134,7 +195,11 @@ export default function Berichten() {
               placeholder="Typ een bericht..."
               className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#F5A623]"
             />
-            <button className="w-10 h-10 bg-[#1DC6B4] text-white rounded-full flex items-center justify-center hover:bg-[#18B5A3] transition-colors">
+            <button
+            onClick={handleSend}
+            disabled={!message.trim()}
+            className="w-10 h-10 bg-[#1DC6B4] text-white rounded-full flex items-center justify-center hover:bg-[#18B5A3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
               <Send size={20} />
             </button>
           </div>
