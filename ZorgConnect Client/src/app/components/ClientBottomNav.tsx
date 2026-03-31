@@ -15,7 +15,7 @@ export function ClientBottomNav() {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center py-2 max-w-[390px] mx-auto">
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center py-2 w-full mx-auto">
       {navItems.map((item) => (
         <Link
           key={item.path}

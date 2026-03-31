@@ -30,7 +30,7 @@ export default function SOSScreen() {
 
   if (isEmergencySent) {
     return (
-      <div className="min-h-screen bg-white flex flex-col pb-20 max-w-[390px] mx-auto">
+      <div className="min-h-screen bg-white flex flex-col pb-20 w-full mx-auto">
         {/* Red Header */}
         <div className="bg-[#D9534F] text-white text-center py-4 px-4">
           <h1 className="font-bold text-lg">Noodmelding</h1>
@@ -89,7 +89,7 @@ export default function SOSScreen() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col pb-20 max-w-[390px] mx-auto">
+    <div className="min-h-screen bg-white flex flex-col pb-20 w-full mx-auto">
       {/* Red Header */}
       <div className="bg-[#D9534F] text-white text-center py-4 px-4">
         <h1 className="font-bold text-lg">Noodmelding</h1>

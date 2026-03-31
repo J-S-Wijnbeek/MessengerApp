@@ -20,7 +20,7 @@ export default function ClientHome() {
   const nietBeschikbaarOther = mockOtherStaff.filter((s) => s.status === "niet-beschikbaar");
 
   return (
-    <div className="min-h-screen bg-white pb-20 max-w-[390px] mx-auto">
+    <div className="min-h-screen bg-white pb-20 w-full mx-auto">
       <TealHeader title="ZorgConnect" />
 
       {/* Nearest Staff Highlight Card */}
