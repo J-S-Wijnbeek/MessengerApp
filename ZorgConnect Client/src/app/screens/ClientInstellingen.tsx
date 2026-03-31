@@ -5,19 +5,21 @@ import { ClientBottomNav } from "../components/ClientBottomNav";
 import { SectionBar } from "../components/SectionBar";
 import { ChevronRight } from "lucide-react";
 import { User, Bell, Shield, HelpCircle, FileText, LogOut } from "lucide-react";
+import { ToggleRow } from "../components/ToggleRow";
+import { useToggle } from "../hooks/useToggle";
 
 export default function ClientInstellingen() {
   const navigate = useNavigate();
-  const [berichtenNotif, setBerichtenNotif] = useState(true);
-  const [afsprakenNotif, setAfsprakenNotif] = useState(true);
+  const { value: berichtenNotif, toggle: toggleBerichtenNotif } = useToggle(true);
+  const { value: afsprakenNotif, toggle: toggleAfsprakenNotif } = useToggle(true);
   const [sosBevestiging, setSosBevestiging] = useState<boolean>(() => {
     if (typeof window === "undefined") return true;
     const stored = window.localStorage.getItem("showSosButton");
     return stored === null ? true : stored === "true";
   });
-  const [faceId, setFaceId] = useState(false);
-  const [groteTekst, setGroteTekst] = useState(false);
-  const [hoogContrast, setHoogContrast] = useState(false);
+  const { value: faceId, toggle: toggleFaceId } = useToggle(false);
+  const { value: groteTekst, toggle: toggleGroteTekst } = useToggle(false);
+  const { value: hoogContrast, toggle: toggleHoogContrast } = useToggle(false);
 
   const handleLogout = () => {
     // Navigate back to login
@@ -56,63 +58,28 @@ export default function ClientInstellingen() {
 
       {/* Notifications */}
       <SectionBar title="Meldingen" />
-      <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-        <div className="text-gray-900">Berichten</div>
-        <button
-          onClick={() => setBerichtenNotif(!berichtenNotif)}
-          className={`w-12 h-7 rounded-full transition-colors ${
-            berichtenNotif ? "bg-[#F5A623]" : "bg-gray-300"
-          }`}
-        >
-          <div
-            className={`w-5 h-5 bg-white rounded-full transition-transform ${
-              berichtenNotif ? "translate-x-6" : "translate-x-1"
-            }`}
-          />
-        </button>
-      </div>
-      <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-        <div className="text-gray-900">Afspraken</div>
-        <button
-          onClick={() => setAfsprakenNotif(!afsprakenNotif)}
-          className={`w-12 h-7 rounded-full transition-colors ${
-            afsprakenNotif ? "bg-[#F5A623]" : "bg-gray-300"
-          }`}
-        >
-          <div
-            className={`w-5 h-5 bg-white rounded-full transition-transform ${
-              afsprakenNotif ? "translate-x-6" : "translate-x-1"
-            }`}
-          />
-        </button>
-      </div>
-      <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-        <div className="flex flex-col w-3/4">
-          <span className="text-gray-900">SOS-knop tonen</span>
-          <span className="text-xs text-gray-500">
-            Schakel de SOS-snelknop in de navigatiebalk onderin aan of uit. Als deze optie uit staat, vind je de SOS-pagina alleen nog via de knop hieronder.
-          </span>
-        </div>
-        <button
-          onClick={() => {
-            const next = !sosBevestiging;
-            setSosBevestiging(next);
-            if (typeof window !== "undefined") {
-              window.localStorage.setItem("showSosButton", String(next));
-              window.dispatchEvent(new Event("sos-settings-changed"));
-            }
-          }}
-          className={`w-12 h-7 rounded-full transition-colors ${
-            sosBevestiging ? "bg-[#F5A623]" : "bg-gray-300"
-          }`}
-        >
-          <div
-            className={`w-5 h-5 bg-white rounded-full transition-transform ${
-              sosBevestiging ? "translate-x-6" : "translate-x-1"
-            }`}
-          />
-        </button>
-      </div>
+      <ToggleRow
+        label="Berichten"
+        value={berichtenNotif}
+        onChange={toggleBerichtenNotif}
+      />
+      <ToggleRow
+        label="Afspraken"
+        value={afsprakenNotif}
+        onChange={toggleAfsprakenNotif}
+      />
+      <ToggleRow
+        label="SOS-knop tonen"
+        description="Schakel de SOS-snelknop in de navigatiebalk onderin aan of uit. Als deze optie uit staat, vind je de SOS-pagina alleen nog via de knop hieronder."
+        value={sosBevestiging}
+        onChange={(next) => {
+          setSosBevestiging(next);
+          if (typeof window !== "undefined") {
+            window.localStorage.setItem("showSosButton", String(next));
+            window.dispatchEvent(new Event("sos-settings-changed"));
+          }
+        }}
+      />
 
       {/* Alt. SOS-toegang vanuit instellingen (alleen zichtbaar als knop onderin uitstaat) */}
       {!sosBevestiging && (
@@ -132,54 +99,24 @@ export default function ClientInstellingen() {
         <div className="text-gray-900">Wachtwoord wijzigen</div>
         <ChevronRight size={20} className="text-gray-400" />
       </button>
-      <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-        <div className="text-gray-900">Face ID / vingerafdruk</div>
-        <button
-          onClick={() => setFaceId(!faceId)}
-          className={`w-12 h-7 rounded-full transition-colors ${
-            faceId ? "bg-[#F5A623]" : "bg-gray-300"
-          }`}
-        >
-          <div
-            className={`w-5 h-5 bg-white rounded-full transition-transform ${
-              faceId ? "translate-x-6" : "translate-x-1"
-            }`}
-          />
-        </button>
-      </div>
+      <ToggleRow
+        label="Face ID / vingerafdruk"
+        value={faceId}
+        onChange={toggleFaceId}
+      />
 
       {/* Accessibility */}
       <SectionBar title="Toegankelijkheid" />
-      <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-        <div className="text-gray-900">Grote tekst</div>
-        <button
-          onClick={() => setGroteTekst(!groteTekst)}
-          className={`w-12 h-7 rounded-full transition-colors ${
-            groteTekst ? "bg-[#F5A623]" : "bg-gray-300"
-          }`}
-        >
-          <div
-            className={`w-5 h-5 bg-white rounded-full transition-transform ${
-              groteTekst ? "translate-x-6" : "translate-x-1"
-            }`}
-          />
-        </button>
-      </div>
-      <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-        <div className="text-gray-900">Hoog contrast</div>
-        <button
-          onClick={() => setHoogContrast(!hoogContrast)}
-          className={`w-12 h-7 rounded-full transition-colors ${
-            hoogContrast ? "bg-[#F5A623]" : "bg-gray-300"
-          }`}
-        >
-          <div
-            className={`w-5 h-5 bg-white rounded-full transition-transform ${
-              hoogContrast ? "translate-x-6" : "translate-x-1"
-            }`}
-          />
-        </button>
-      </div>
+      <ToggleRow
+        label="Grote tekst"
+        value={groteTekst}
+        onChange={toggleGroteTekst}
+      />
+      <ToggleRow
+        label="Hoog contrast"
+        value={hoogContrast}
+        onChange={toggleHoogContrast}
+      />
 
       {/* Logout */}
       <div className="p-4 pt-8">

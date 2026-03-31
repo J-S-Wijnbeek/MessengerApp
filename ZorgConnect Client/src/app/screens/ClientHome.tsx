@@ -5,6 +5,7 @@ import { SectionBar } from "../components/SectionBar";
 import { mockCoupledCareWorkers, mockOtherStaff } from "../data/mockData";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useNavigate } from "react-router";
+import { ListRow, StatusType } from "../components/ListRow";
 
 export default function ClientHome() {
   const [showOtherStaff, setShowOtherStaff] = useState(false);
@@ -77,16 +78,12 @@ export default function ClientHome() {
         <>
           <SectionBar title="Beschikbaar" />
           {beschikbaarCoupled.map((staff) => (
-            <div key={staff.id} className="px-4 py-3 border-b border-gray-100 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                <span className="text-gray-500 font-medium">{staff.name.charAt(0)}</span>
-              </div>
-              <div className="flex-1">
-                <div className="font-medium text-gray-900">{staff.name}</div>
-                <div className="text-sm text-gray-500">{staff.role}</div>
-              </div>
-              <div className="w-3 h-3 rounded-full bg-green-500" />
-            </div>
+            <ListRow
+              key={staff.id}
+              name={staff.name}
+              subtitle={staff.role}
+              status={staff.status as StatusType}
+            />
           ))}
         </>
       )}
@@ -95,21 +92,13 @@ export default function ClientHome() {
         <>
           <SectionBar title="Achterwacht" />
           {achterwachtCoupled.map((staff) => (
-            <div key={staff.id} className="px-4 py-3 border-b border-gray-100 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                <span className="text-gray-500 font-medium">{staff.name.charAt(0)}</span>
-              </div>
-              <div className="flex-1">
-                <div className="font-medium text-gray-900">{staff.name}</div>
-                <div className="text-sm text-gray-500">{staff.role}</div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs bg-[#F5A623] text-white px-2 py-1 rounded-full">
-                  Achterwacht
-                </span>
-                <div className="w-3 h-3 rounded-full bg-[#F5A623]" />
-              </div>
-            </div>
+            <ListRow
+              key={staff.id}
+              name={staff.name}
+              subtitle={staff.role}
+              status={staff.status as StatusType}
+              badge="Achterwacht"
+            />
           ))}
         </>
       )}
@@ -118,16 +107,12 @@ export default function ClientHome() {
         <>
           <SectionBar title="Niet beschikbaar" />
           {nietBeschikbaarCoupled.map((staff) => (
-            <div key={staff.id} className="px-4 py-3 border-b border-gray-100 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                <span className="text-gray-500 font-medium">{staff.name.charAt(0)}</span>
-              </div>
-              <div className="flex-1">
-                <div className="font-medium text-gray-900">{staff.name}</div>
-                <div className="text-sm text-gray-500">{staff.role}</div>
-              </div>
-              <div className="w-3 h-3 rounded-full bg-gray-400" />
-            </div>
+            <ListRow
+              key={staff.id}
+              name={staff.name}
+              subtitle={staff.role}
+              status={staff.status as StatusType}
+            />
           ))}
         </>
       )}
@@ -145,49 +130,33 @@ export default function ClientHome() {
         <>
           {beschikbaarOther.length > 0 &&
             beschikbaarOther.map((staff) => (
-              <div key={staff.id} className="px-4 py-3 border-b border-gray-100 flex items-center gap-3 bg-gray-50">
-                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                  <span className="text-gray-500 font-medium">{staff.name.charAt(0)}</span>
-                </div>
-                <div className="flex-1">
-                  <div className="font-medium text-gray-900">{staff.name}</div>
-                  <div className="text-sm text-gray-500">{staff.role}</div>
-                </div>
-                <div className="w-3 h-3 rounded-full bg-green-500" />
-              </div>
+              <ListRow
+                key={staff.id}
+                name={staff.name}
+                subtitle={staff.role}
+                status={staff.status as StatusType}
+              />
             ))}
 
           {achterwachtOther.length > 0 &&
             achterwachtOther.map((staff) => (
-              <div key={staff.id} className="px-4 py-3 border-b border-gray-100 flex items-center gap-3 bg-gray-50">
-                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                  <span className="text-gray-500 font-medium">{staff.name.charAt(0)}</span>
-                </div>
-                <div className="flex-1">
-                  <div className="font-medium text-gray-900">{staff.name}</div>
-                  <div className="text-sm text-gray-500">{staff.role}</div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs bg-[#F5A623] text-white px-2 py-1 rounded-full">
-                    Achterwacht
-                  </span>
-                  <div className="w-3 h-3 rounded-full bg-[#F5A623]" />
-                </div>
-              </div>
+              <ListRow
+                key={staff.id}
+                name={staff.name}
+                subtitle={staff.role}
+                status={staff.status as StatusType}
+                badge="Achterwacht"
+              />
             ))}
 
           {nietBeschikbaarOther.length > 0 &&
             nietBeschikbaarOther.map((staff) => (
-              <div key={staff.id} className="px-4 py-3 border-b border-gray-100 flex items-center gap-3 bg-gray-50">
-                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                  <span className="text-gray-500 font-medium">{staff.name.charAt(0)}</span>
-                </div>
-                <div className="flex-1">
-                  <div className="font-medium text-gray-900">{staff.name}</div>
-                  <div className="text-sm text-gray-500">{staff.role}</div>
-                </div>
-                <div className="w-3 h-3 rounded-full bg-gray-400" />
-              </div>
+              <ListRow
+                key={staff.id}
+                name={staff.name}
+                subtitle={staff.role}
+                status={staff.status as StatusType}
+              />
             ))}
         </>
       )}
