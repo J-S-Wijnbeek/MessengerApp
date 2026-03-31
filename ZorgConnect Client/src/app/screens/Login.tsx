@@ -14,7 +14,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col max-w-[390px] mx-auto">
+    <div className="min-h-screen bg-white flex flex-col w-full mx-auto">
       {/* Teal Header with Logo Only */}
       <div className="bg-[#F5A623] text-white text-center py-8">
         <div className="text-4xl font-bold mb-2">ZorgConnect</div>

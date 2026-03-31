@@ -40,7 +40,7 @@ export default function Berichten() {
       : "Deze zorgmedewerker is momenteel niet beschikbaar";
 
     return (
-      <div className="min-h-screen bg-white flex flex-col pb-20 max-w-[390px] mx-auto">
+      <div className="min-h-screen bg-white flex flex-col pb-20 w-full mx-auto">
         <div className="bg-[#F5A623] text-white text-center py-4 px-4 flex items-center justify-center relative">
           <button
             onClick={() => setSelectedChat(null)}
@@ -146,7 +146,7 @@ export default function Berichten() {
   }
 
   return (
-    <div className="min-h-screen bg-white pb-20 max-w-[390px] mx-auto relative">
+    <div className="min-h-screen bg-white pb-20 w-full mx-auto relative">
       <TealHeader title="Berichten" />
 
       {/* Chat List */}
@@ -205,7 +205,7 @@ export default function Berichten() {
             onClick={() => setShowNewChatSheet(false)}
             className="fixed inset-0 bg-black bg-opacity-30 z-20"
           />
-          <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl z-30 max-w-[390px] mx-auto animate-slide-up">
+          <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl z-30 w-full mx-auto animate-slide-up">
             <div className="flex items-center justify-between p-4 border-b border-gray-200">
               <h2 className="font-bold text-lg">Nieuw bericht</h2>
               <button
