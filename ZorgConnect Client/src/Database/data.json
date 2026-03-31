@@ -16,28 +16,5 @@
       "id": "1tW5QwBTTPA"
     }
   ],
-  "messages": [
-    {
-      "chatId": 5,
-      "senderId": "client-1",
-      "receiverId": 5,
-      "text": "Hoi, heb je even tijd om te bellen?",
-      "sender": "client",
-      "time": "13:49",
-      "createdAt": "2026-03-31T11:49:42.353Z",
-      "id": "s6ETeAw76lo"
-    }
-  ],
   "$schema": "./node_modules/json-server/schema.json"
-    "appointments": [
-        {
-            "id": 1,
-      "date": "",
-      "time": "",
-      "type": "",
-      "staffName": "",
-      "isPast": false,
-      "isNow": false
-        }
-    ]
 }

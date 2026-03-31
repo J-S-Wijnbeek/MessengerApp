@@ -57,8 +57,6 @@ export function useClientAgenda() {
   const [isRequestSentOpen, setIsRequestSentOpen] = useState(false);
   const [lastRequest, setLastRequest] = useState<AppointmentRequest | null>(null);
   const [appointments, setAppointments] = useState<Appointment[]>(getStoredAppointments());
-  const [view, setView] = useState<string>("Aankomend");
-  const [isSheetOpen, setIsSheetOpen] = useState<boolean>(false);
 
   // Sla afspraken op in localStorage bij elke wijziging
   useEffect(() => {
