@@ -18,18 +18,34 @@ export interface AppointmentRequest {
   notes: string;
 }
 
+// Type guard for Appointment
+function isAppointment(obj: any): obj is Appointment {
+  return obj &&
+    typeof obj.id === "number" &&
+    typeof obj.date === "string" &&
+    typeof obj.time === "string" &&
+    (obj.type === "call" || obj.type === "meeting") &&
+    typeof obj.staffName === "string" &&
+    typeof obj.isPast === "boolean" &&
+    typeof obj.isNow === "boolean";
+}
+
 // Haal afspraken uit localStorage, of uit data.json als localStorage leeg is
 function getStoredAppointments(): Appointment[] {
   const stored = localStorage.getItem("appointments");
   if (stored) {
     try {
       const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed)) return parsed;
+      if (Array.isArray(parsed) && parsed.every(isAppointment)) return parsed;
+      if (parsed && Array.isArray(parsed.appointments) && parsed.appointments.every(isAppointment)) return parsed.appointments;
     } catch {
       // fallback op data.json
     }
   }
-  return agendaData.appointments ?? [];
+  // Always return a valid array
+  return Array.isArray(agendaData.appointments) && agendaData.appointments.every(isAppointment)
+    ? agendaData.appointments
+    : [];
 }
 
 export function useClientAgenda() {
