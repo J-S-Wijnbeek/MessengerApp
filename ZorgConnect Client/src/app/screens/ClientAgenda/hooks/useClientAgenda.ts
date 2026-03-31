@@ -21,7 +21,7 @@ export interface AppointmentRequest {
 export function useClientAgenda() {
   // TODO: Replace with real logged-in user once auth/profile state exists.
   const currentUserName = "Peter Hendriks";
-  const dbUrl = import.meta.env.VITE_DATABASE_URL ?? 'http://localhost:3001/appointmentRequests';
+  const dbUrl = import.meta.env.VITE_DATABASE_URL;
 
   const [view, setView] = useState<string>("Aankomend");
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -62,11 +62,11 @@ export function useClientAgenda() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            action: 'create',
             date: request.date,
             time_of_day: request.time_of_day,
             notes: request.notes,
             created_by_name: currentUserName,
-            created_at: new Date().toISOString(),
           }),
         });
         if (res.ok) {
