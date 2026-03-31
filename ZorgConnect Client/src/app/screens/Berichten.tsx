@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 import { TealHeader } from "../components/TealHeader";
 import { ClientBottomNav } from "../components/ClientBottomNav";
@@ -7,25 +7,30 @@ import { mockClients, mockCoupledCareWorkers } from "../data/mockData";
 import { Send, ArrowLeft, X, Plus, Search, AlertCircle, Check } from "lucide-react";
 import { useLocation } from "react-router";
 
-const socket = io("http://localhost:3001");
-
 const initialMockMessages = [
-  { id: 1, message: "Hallo, hoe gaat het met je?", senderType: "staff", time: "14:20", chatId: "1", read: true },
-  { id: 2, message: "Het gaat goed, dank je!", senderType: "client", time: "14:25", chatId: "1", read: false },
-  { id: 3, message: "Fijn om te horen. Heb je nog vragen?", senderType: "staff", time: "14:28", chatId: "1", read: true },
-  { id: 4, message: "Dank je wel voor het gesprek vandaag", senderType: "client", time: "14:30", chatId: "1", read: false },
+  { id: 1, message: "Hallo, hoe gaat het met je?", senderType: "staff", timestamp: "14:20", chatId: "1", read: true },
+  { id: 2, message: "Het gaat goed, dank je!", senderType: "client", timestamp: "14:25", chatId: "1", read: false },
+  { id: 3, message: "Fijn om te horen. Heb je nog vragen?", senderType: "staff", timestamp: "14:28", chatId: "1", read: true },
+  { id: 4, message: "Dank je wel voor het gesprek vandaag", senderType: "client", timestamp: "14:30", chatId: "1", read: false },
 ];
 
 export default function Berichten() {
   const location = useLocation();
   const initialChatId = location.state?.chatId || null;
-  
+  const socketRef = useRef<any>(null);
+  const selectedChatRef = useRef<number | null>(initialChatId);
+  const currentClientId = 1;
+  const currentChatId = currentClientId.toString();
+
   const [selectedChat, setSelectedChat] = useState<number | null>(initialChatId);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState(initialMockMessages);
   const [showNewChatSheet, setShowNewChatSheet] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showUnavailableAlert, setShowUnavailableAlert] = useState(true); // Demo: show on first load
+  const [triggerWarning, setTriggerWarning] = useState<string | null>(null);
+  const [socketConnected, setSocketConnected] = useState(false);
+  const localTriggerWords = ["help", "emergency", "urgent", "suicide", "panic", "abuse", "danger", "angst", "stress"];
 
 
   const filteredCareWorkers = mockCoupledCareWorkers.filter((worker) =>
@@ -33,54 +38,101 @@ export default function Berichten() {
   );
 
   useEffect(() => {
+    selectedChatRef.current = selectedChat;
+  }, [selectedChat]);
+
+  useEffect(() => {
+    const socket = io("http://localhost:3001");
+    socketRef.current = socket;
+
     const handleHistory = ({ chatId, history }: any) => {
-      if (!selectedChat || chatId !== selectedChat.toString()) return;
+      if (chatId !== currentChatId) return;
       setMessages(history);
     };
 
     const handleIncoming = (msg: any) => {
-      if (!selectedChat || msg.chatId !== selectedChat.toString()) return;
+      if (msg.chatId !== currentChatId) return;
       setMessages((prev) =>
         prev.some((existing) => existing.id === msg.id) ? prev : [...prev, msg]
       );
     };
 
+    const handleTriggerWarning = ({ chatId, matches, message }: any) => {
+      if (chatId !== currentChatId) return;
+      const warningText = `Trigger warning for chat ${chatId}: ${matches.join(", ")} - ${message}`;
+      console.error(warningText);
+      setTriggerWarning(warningText);
+      setTimeout(() => setTriggerWarning(null), 10000);
+    };
+
+    const handleConnect = () => {
+      console.log("Socket connected", socket.id);
+      setSocketConnected(true);
+      socket.emit("join_chat", currentChatId);
+      socket.emit("read_chat", { chatId: currentChatId, readerType: "client" });
+    };
+
+    const handleDisconnect = (reason: any) => {
+      console.log("Socket disconnected", reason);
+      setSocketConnected(false);
+    };
+
+    const handleError = (error: any) => {
+      console.error("Socket.IO error:", error);
+    };
+
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+    socket.on("connect_error", handleError);
     socket.on("chat_history", handleHistory);
     socket.on("chat_message", handleIncoming);
+    socket.on("trigger_warning", handleTriggerWarning);
+
     return () => {
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+      socket.off("connect_error", handleError);
       socket.off("chat_history", handleHistory);
       socket.off("chat_message", handleIncoming);
+      socket.off("trigger_warning", handleTriggerWarning);
+      socket.disconnect();
     };
-  }, [selectedChat]);
+  }, []);
 
   useEffect(() => {
-    if (!selectedChat) return;
-    const chatId = selectedChat.toString();
-    socket.emit("join_chat", chatId);
-    socket.emit("read_chat", { chatId, readerType: "client" });
-  }, [selectedChat]);
+    if (!currentChatId) return;
+    socketRef.current?.emit("join_chat", currentChatId);
+    socketRef.current?.emit("read_chat", { chatId: currentChatId, readerType: "client" });
+  }, []);
 
-  const activeMessages = selectedChat
-    ? messages.filter((msg) => msg.chatId === selectedChat.toString())
-    : [];
+  const activeMessages = messages.filter((msg) => msg.chatId === currentChatId);
 
   const handleSend = () => {
     if (!message.trim() || selectedChat === null) return;
 
     const msg = {
       id: Date.now(),
-      chatId: selectedChat.toString(),
+      chatId: currentChatId,
       senderType: "client" as const,
       message: message.trim(),
-      time: new Date().toLocaleTimeString([], {
+      timestamp: new Date().toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
       }),
       read: false,
     };
 
+    const lower = msg.message.toLowerCase();
+    const localMatches = localTriggerWords.filter((word) => lower.includes(word));
+    if (localMatches.length > 0) {
+      const warningText = `Local trigger word detected: ${localMatches.join(", ")} in message "${msg.message}"`;
+      console.error(warningText);
+      setTriggerWarning(warningText);
+      setTimeout(() => setTriggerWarning(null), 10000);
+    }
+
     setMessages((prev) => [...prev, msg]);
-    socket.emit("chat_message", msg);
+    socketRef.current?.emit("chat_message", msg);
     setMessage("");
   };
 
@@ -154,6 +206,17 @@ export default function Berichten() {
           </div>
         )}
 
+        {/* Connection status */}
+        <div className="px-4 py-3 text-xs text-gray-500">
+          Socket status: {socketConnected ? "connected" : "disconnected"}
+        </div>
+        {/* Trigger Warning */}
+        {triggerWarning && (
+          <div className="bg-red-100 border border-red-300 text-red-900 rounded-xl px-4 py-3 mb-3">
+            {triggerWarning}
+          </div>
+        )}
+
         {/* Chat Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
           {activeMessages.map((msg) => (
@@ -171,7 +234,7 @@ export default function Berichten() {
                 <div>{msg.message}</div>
                 <div className="flex items-center gap-2 mt-1 text-xs">
                   <span className={msg.senderType === "client" ? "text-white/80" : "text-gray-500"}>
-                    {msg.time}
+                    {msg.timestamp || msg.time}
                   </span>
                   {msg.senderType === "client" && (
                     <span className="flex items-center gap-1 text-white/60">

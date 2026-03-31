@@ -11,23 +11,54 @@ const io = new Server(server, {
     cors: { origin: "*" }
 });
 
+const triggerWordsConfig = require("./triggerWords.json");
+const triggerWords = Array.isArray(triggerWordsConfig.triggerWords)
+  ? triggerWordsConfig.triggerWords.map((word) => word.toLowerCase())
+  : [];
+
 const chatHistory = {};
 
 io.on("connection", (socket) => {
     console.log("User connected: " + socket.id);
 
     socket.on("join_chat", (chatId) => {
+        console.log("join_chat", chatId, "socket", socket.id);
         socket.join(chatId);
         const history = chatHistory[chatId] || [];
         socket.emit("chat_history", { chatId, history });
     });
 
     socket.on("chat_message", (msg) => {
-        console.log("chat_message", msg);
-        const chatId = msg.chatId;
+        const normalizedMsg = {
+            ...msg,
+            timestamp: msg.timestamp || msg.time || new Date().toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+            }),
+            read: msg.read === true,
+        };
+
+        console.log("chat_message", normalizedMsg);
+        const chatId = normalizedMsg.chatId;
         if (!chatHistory[chatId]) chatHistory[chatId] = [];
-        chatHistory[chatId].push(msg);
-        io.to(chatId).emit("chat_message", msg);
+        chatHistory[chatId].push(normalizedMsg);
+
+        const normalizedMessage = String(normalizedMsg.message || "").toLowerCase();
+        const messageTokens = normalizedMessage.split(/\W+/).filter(Boolean);
+        const matches = triggerWords.filter((word) => messageTokens.includes(word));
+        if (matches.length > 0) {
+            const warning = {
+                chatId,
+                matches,
+                message: normalizedMsg.message,
+            };
+            console.log("Trigger words detected:", matches, "in chat", chatId, "message:", normalizedMsg.message);
+            console.log("Emitting trigger warning to sender and room", chatId);
+            socket.emit("trigger_warning", warning);
+            io.to(chatId).emit("trigger_warning", warning);
+        }
+
+        io.to(chatId).emit("chat_message", normalizedMsg);
     });
 
     socket.on("read_chat", ({ chatId, readerType }) => {
