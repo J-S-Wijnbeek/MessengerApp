@@ -1,6 +1,52 @@
-import { useState } from "react";
-import { mockAppointments } from "../../../data/mockData";
-import { AppointmentRequest } from "../../../components/AppointmentRequestSheet";
+import { useEffect, useState } from "react";
+import agendaData from "../../../../Database/data.json";
+
+// Types
+export interface Appointment {
+  id: number;
+  date: string;
+  time: string;
+  type: "call" | "meeting";
+  staffName: string;
+  isPast: boolean;
+  isNow: boolean;
+}
+
+export interface AppointmentRequest {
+  date: string;
+  timeOfDay: "ochtend" | "middag" | "avond" | "geen-voorkeur";
+  notes: string;
+}
+
+// Type guard for Appointment
+function isAppointment(obj: any): obj is Appointment {
+  return obj &&
+    typeof obj.id === "number" &&
+    typeof obj.date === "string" &&
+    typeof obj.time === "string" &&
+    (obj.type === "call" || obj.type === "meeting") &&
+    typeof obj.staffName === "string" &&
+    typeof obj.isPast === "boolean" &&
+    typeof obj.isNow === "boolean";
+}
+
+// Haal afspraken uit localStorage, of uit data.json als localStorage leeg is
+function getStoredAppointments(): Appointment[] {
+  const stored = localStorage.getItem("appointments");
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.every(isAppointment)) return parsed;
+      if (parsed && Array.isArray(parsed.appointments) && parsed.appointments.every(isAppointment)) return parsed.appointments;
+    } catch {
+      // fallback op data.json
+    }
+  }
+  // Always return a valid array
+  return Array.isArray(agendaData.appointments) && agendaData.appointments.every(isAppointment)
+    ? agendaData.appointments
+    : [];
+}
 
 export function useClientAgenda() {
   // TODO: Replace with real logged-in user once auth/profile state exists.
@@ -10,11 +56,25 @@ export function useClientAgenda() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isRequestSentOpen, setIsRequestSentOpen] = useState(false);
   const [lastRequest, setLastRequest] = useState<AppointmentRequest | null>(null);
+  const [appointments, setAppointments] = useState<Appointment[]>(getStoredAppointments());
+  const [view, setView] = useState<string>("Aankomend");
+  const [isSheetOpen, setIsSheetOpen] = useState<boolean>(false);
 
-  const todayAppointments = mockAppointments.filter((a) => a.date === "Vandaag");
-  const laterAppointments = mockAppointments.filter((a) => a.date !== "Vandaag");
-  const pastAppointments = mockAppointments.filter((a) => a.isPast);
+  // Sla afspraken op in localStorage bij elke wijziging
+  useEffect(() => {
+    localStorage.setItem("appointments", JSON.stringify(appointments));
+  }, [appointments]);
 
+  // Filter afspraken voor vandaag, later en afgelopen
+  const todayAppointments = appointments.filter(
+    (a) => a.date === "Vandaag" && !a.isPast
+  );
+  const laterAppointments = appointments.filter(
+    (a) => a.date !== "Vandaag" && !a.isPast
+  );
+  const pastAppointments = appointments.filter((a) => a.isPast);
+
+  // Voeg nieuwe afspraak toe vanuit AppointmentRequestSheet
   const handleAppointmentRequest = (request: AppointmentRequest) => {
     console.log("Appointment request:", request);
     (async () => {
