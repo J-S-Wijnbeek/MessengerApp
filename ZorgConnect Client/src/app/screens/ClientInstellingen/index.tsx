@@ -34,7 +34,9 @@ export default function ClientInstellingen() {
     colorTheme,
     setColorTheme,
     handleLogout,
-  } = useClientInstellingen() as ClientInstellingenHook;
+    locatieDelen,
+    toggleLocatieDelen,
+  } = useClientInstellingen();
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-20 w-full mx-auto">
@@ -92,6 +94,12 @@ export default function ClientInstellingen() {
           </button>
         </div>
       )}
+      {/* {locatieDelen} */}
+      <ToggleRow
+        label="Locatie delen"
+        value={locatieDelen}
+        onChange={toggleLocatieDelen}
+      />
 
       {/* Security */}
       {/* <SectionBar title="Beveiliging" />

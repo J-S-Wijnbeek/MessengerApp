@@ -47,6 +47,36 @@ export function useClientInstellingen(): ClientInstellingenHook {
     const stored = window.localStorage.getItem("showSosButton");
     return stored === null ? true : stored === "true";
   });
+  const [locatieDelen, setLocatieDelen] = useState<boolean>(() => {
+    try {
+      const raw = localStorage.getItem("zorgconnect:client:locatieDelen");
+      return raw === "true";
+    } catch {
+      return false;
+    }
+  });
+
+  // Sla locatieDelen op in localStorage en json-server
+  const persistLocatieDelen = async (value: boolean) => {
+    try {
+      localStorage.setItem("zorgconnect:client:locatieDelen", String(value));
+    } catch {}
+    // Probeer ook op te slaan in json-server (data.json)
+    try {
+      await fetch("http://localhost:3001/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ locatieDelen: value }),
+      });
+    } catch {
+      // offline of json-server niet gestart
+    }
+  };
+
+  const toggleLocatieDelen = (next: boolean) => {
+    setLocatieDelen(next);
+    persistLocatieDelen(next);
+  };
   const { value: faceId, toggle: toggleFaceId } = useToggle(false);
   const [groteTekst, setGroteTekst] = useState<boolean>(() => readA11yPrefsFromStorage().largeText);
   const [hoogContrast, setHoogContrast] = useState<boolean>(() => readA11yPrefsFromStorage().highContrast);
@@ -117,5 +147,8 @@ export function useClientInstellingen(): ClientInstellingenHook {
     setColorTheme,
     handleLogout,
     settingsOptions,
+    locatieDelen,
+    toggleLocatieDelen,
+
   };
 }
