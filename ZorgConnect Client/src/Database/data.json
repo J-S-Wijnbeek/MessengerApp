@@ -48,5 +48,5 @@
       "id": "WcTwbzS0p9Q"
     }
   ],
-  "$schema": "./node_modules/json-server/schema.json"
+  "$schema": "../node_modules/json-server/schema.json"
 }
