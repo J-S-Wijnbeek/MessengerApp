@@ -1,6 +1,6 @@
-import { useState, useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
-import { mockAvailability } from "../data/mockData";
+import { mockAvailability, mockStaff, mockCoupledCareWorkers, mockOtherStaff } from "../data/mockData";
 
 interface AppointmentRequestSheetProps {
   isOpen: boolean;
@@ -14,6 +14,77 @@ export interface AppointmentRequest {
   notes: string;
 }
 
+type StaffStatus = "beschikbaar" | "achterwacht" | "niet-beschikbaar" | "onbekend";
+
+const getStaffStatus = (name: string): StaffStatus => {
+  const allStaff = [...mockStaff, ...mockCoupledCareWorkers, ...mockOtherStaff];
+  const staffMember = allStaff.find((s) => s.name === name);
+  return (staffMember?.status as StaffStatus) || "onbekend";
+};
+
+const getStatusColors = (status: StaffStatus) => {
+  switch (status) {
+    case "beschikbaar":
+      return {
+        dot: "bg-green-500",
+        text: "text-green-700",
+      };
+    case "achterwacht":
+      return {
+        dot: "bg-orange-500",
+        text: "text-orange-700",
+      };
+    case "niet-beschikbaar":
+      return {
+        dot: "bg-gray-400",
+        text: "text-gray-500",
+      };
+    default:
+      return {
+        dot: "bg-gray-300",
+        text: "text-gray-700",
+      };
+  }
+};
+
+type SlotCategory = "green" | "orange" | "gray";
+
+const getSlotCategory = (
+  availableCount: number,
+  slot: "ochtend" | "middag" | "avond",
+  selectedTimeOfDay: "ochtend" | "middag" | "avond" | "geen-voorkeur",
+): SlotCategory => {
+  if (availableCount <= 0) return "gray";
+
+  if (selectedTimeOfDay === "geen-voorkeur") {
+    // Geen voorkeur: alle blokken groen (als er beschikbaarheid is)
+    return "green";
+  }
+
+  // Specifiek dagdeel: gekozen blok groen, rest oranje (als er beschikbaarheid is)
+  return slot === selectedTimeOfDay ? "green" : "orange";
+};
+
+const getSlotCardColors = (category: SlotCategory) => {
+  switch (category) {
+    case "green":
+      return {
+        card: "bg-green-50 border-green-200",
+        badge: "text-green-700",
+      };
+    case "orange":
+      return {
+        card: "bg-orange-50 border-orange-200",
+        badge: "text-orange-700",
+      };
+    default:
+      return {
+        card: "bg-gray-50 border-gray-200",
+        badge: "text-gray-500",
+      };
+  }
+};
+
 export function AppointmentRequestSheet({
   isOpen,
   onClose,
@@ -22,12 +93,31 @@ export function AppointmentRequestSheet({
   const [timeOfDay, setTimeOfDay] = useState<"ochtend" | "middag" | "avond" | "geen-voorkeur">("geen-voorkeur");
   const [date, setDate] = useState("");
   const [notes, setNotes] = useState("");
-  const [currentMonth, setCurrentMonth] = useState(new Date(2026, 2)); // March 2026
+  const [currentMonth, setCurrentMonth] = useState(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  });
+
+  const minBookableDate = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() + 2); // 48+ hours in advance (today + 2 days)
+    return d;
+  }, []);
+
+  const isBeforeMinBookable = (d: Date) => d.getTime() < minBookableDate.getTime();
+
+  const toISODate = (d: Date) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
 
   // Get availability status for a date
   const getDateAvailability = (dateStr: string) => {
     const availability = mockAvailability[dateStr];
-    if (!availability) return "none";
+    if (!availability) return "unknown";
 
     if (timeOfDay === "geen-voorkeur") {
       const total = availability.ochtend.available + availability.middag.available + availability.avond.available;
@@ -55,8 +145,8 @@ export function AppointmentRequestSheet({
       date: number;
       dateStr: string;
       isCurrentMonth: boolean;
-      isPast: boolean;
-      availability: "high" | "limited" | "none";
+      isDisabled: boolean;
+      availability: "high" | "limited" | "none" | "unknown";
     }> = [];
 
     // Add empty cells for days before month starts
@@ -65,29 +155,28 @@ export function AppointmentRequestSheet({
         date: 0,
         dateStr: "",
         isCurrentMonth: false,
-        isPast: false,
+        isDisabled: true,
         availability: "none",
       });
     }
 
     // Add days of the month
-    const today = new Date(2026, 2, 30); // March 30, 2026
     for (let day = 1; day <= daysInMonth; day++) {
       const currentDate = new Date(year, month, day);
-      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      const isPast = currentDate < today;
+      const dateStr = toISODate(currentDate);
+      const isDisabled = isBeforeMinBookable(currentDate);
 
       days.push({
         date: day,
         dateStr,
         isCurrentMonth: true,
-        isPast,
-        availability: isPast ? "none" : getDateAvailability(dateStr),
+        isDisabled,
+        availability: isDisabled ? "none" : getDateAvailability(dateStr),
       });
     }
 
     return days;
-  }, [currentMonth, timeOfDay]);
+  }, [currentMonth, timeOfDay, minBookableDate]);
 
   const selectedDateAvailability = date ? mockAvailability[date] : null;
 
@@ -128,12 +217,13 @@ export function AppointmentRequestSheet({
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 z-40"
+        className="fixed inset-0 z-40"
+        style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}
         onClick={onClose}
       />
 
-      {/* Bottom Sheet */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-50 max-w-[390px] mx-auto animate-slide-up max-h-[90vh] overflow-y-auto">
+      {/* Bottom Sheet / Desktop Side Panel */}
+      <div className="fixed inset-x-0 bottom-0 bg-white rounded-t-2xl self-center !h-fit z-50 w-full max-w-md mx-auto animate-slide-up max-h-[90vh] overflow-y-auto md:inset-y-0 md:right-0 md:left-auto md:top-0 md:h-full md:max-w-lg md:rounded-none md:rounded-l-2xl">
         <div className="p-4">
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
@@ -256,7 +346,7 @@ export function AppointmentRequestSheet({
                   let hoverClass = "hover:bg-gray-50";
                   let cursor = "cursor-pointer";
                   
-                  if (day.isPast) {
+                  if (day.isDisabled) {
                     bgColor = "bg-gray-100";
                     textColor = "text-gray-300";
                     cursor = "cursor-not-allowed";
@@ -269,6 +359,10 @@ export function AppointmentRequestSheet({
                     bgColor = "bg-orange-100";
                     textColor = "text-orange-900";
                     hoverClass = "hover:bg-orange-200";
+                  } else if (day.availability === "unknown") {
+                    bgColor = "bg-orange-50";
+                    textColor = "text-orange-900";
+                    hoverClass = "hover:bg-orange-100";
                   } else if (day.availability === "none") {
                     bgColor = "bg-gray-100";
                     textColor = "text-gray-400";
@@ -285,11 +379,11 @@ export function AppointmentRequestSheet({
                     <button
                       key={index}
                       onClick={() => {
-                        if (!day.isPast && day.availability !== "none") {
+                        if (!day.isDisabled && day.availability !== "none") {
                           setDate(day.dateStr);
                         }
                       }}
-                      disabled={day.isPast || day.availability === "none"}
+                      disabled={day.isDisabled || day.availability === "none"}
                       className={`aspect-square border-b border-r border-gray-200 flex items-center justify-center text-sm font-medium transition-colors ${bgColor} ${textColor} ${hoverClass} ${cursor} ${
                         isSelected ? "ring-2 ring-[#F5A623] ring-inset" : ""
                       }`}
@@ -304,7 +398,7 @@ export function AppointmentRequestSheet({
             {/* Legend */}
             <div className="mt-3 p-3 bg-gray-50 rounded-lg">
               <div className="text-xs font-medium text-gray-700 mb-2">Legenda:</div>
-              <div className="grid grid-cols-3 gap-2 text-xs">
+              <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="flex items-center gap-1.5">
                   <div className="w-4 h-4 bg-green-100 border border-green-300 rounded" />
                   <span className="text-gray-600">Goed beschikbaar</span>
@@ -314,89 +408,146 @@ export function AppointmentRequestSheet({
                   <span className="text-gray-600">Beperkt</span>
                 </div>
                 <div className="flex items-center gap-1.5">
+                  <div className="w-4 h-4 bg-orange-50 border border-orange-200 rounded" />
+                  <span className="text-gray-600">Rooster onbekend</span>
+                </div>
+                <div className="flex items-center gap-1.5">
                   <div className="w-4 h-4 bg-gray-100 border border-gray-300 rounded" />
-                  <span className="text-gray-600">Niet beschikbaar</span>
+                  <span className="text-gray-600">Niet beschikbaar / te vroeg</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Availability Display for Selected Date */}
+          {date && !selectedDateAvailability && (
+            <div className="mb-4">
+              <div className="p-3 rounded-lg border border-orange-200 bg-orange-50">
+                <div className="text-sm font-medium text-orange-900">Rooster onbekend</div>
+                <div className="text-xs text-orange-800 mt-1">
+                  Je kunt deze datum wel aanvragen. We bevestigen de afspraak zodra het rooster bekend is.
+                </div>
+              </div>
+            </div>
+          )}
+
           {selectedDateAvailability && date && (
-            <div className="mb-4 p-3 bg-[#F0FFFE] border border-[#1DC6B4] rounded-lg">
+            <div className="mb-4">
               <div className="text-sm font-medium text-gray-900 mb-3">Beschikbaarheid op deze datum:</div>
               <div className="space-y-3">
                 {/* Ochtend */}
-                <div>
+                {(() => {
+                  const slot = selectedDateAvailability.ochtend;
+                  const category = getSlotCategory(slot.available, "ochtend", timeOfDay);
+                  const colors = getSlotCardColors(category);
+                  return (
+                    <div
+                      className={`p-3 rounded-lg border ${colors.card}`}
+                    >
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm text-gray-700 font-medium">Ochtend (08:00-12:00)</span>
-                    <span className={`text-xs font-medium ${
-                      selectedDateAvailability.ochtend.available > 0 ? "text-green-600" : "text-gray-400"
-                    }`}>
-                      {selectedDateAvailability.ochtend.available > 0 
-                        ? `${selectedDateAvailability.ochtend.available} beschikbaar` 
+                    <span className={`text-xs font-medium ${slot.available > 0 ? colors.badge : "text-gray-400"}`}>
+                      {slot.available > 0
+                        ? `${slot.available} beschikbaar`
                         : "Niet beschikbaar"}
                     </span>
                   </div>
-                  {selectedDateAvailability.ochtend.available > 0 && (
+                  {slot.available > 0 && (
                     <div className="ml-2 space-y-1">
-                      {selectedDateAvailability.ochtend.staff.map((staffName, index) => (
-                        <div key={index} className="flex items-center gap-2 text-xs text-gray-600">
-                          <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                          <span>{staffName}</span>
-                        </div>
-                      ))}
+                      {slot.staff.map((staffName, index) => {
+                        const status = getStaffStatus(staffName);
+                        const colors = getStatusColors(status);
+                        return (
+                          <div
+                            key={index}
+                            className={`flex items-center gap-2 text-xs ${colors.text}`}
+                          >
+                            <div className={`w-1.5 h-1.5 rounded-full ${colors.dot}`} />
+                            <span>{staffName}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
-                </div>
+                    </div>
+                  );
+                })()}
 
                 {/* Middag */}
-                <div>
+                {(() => {
+                  const slot = selectedDateAvailability.middag;
+                  const category = getSlotCategory(slot.available, "middag", timeOfDay);
+                  const colors = getSlotCardColors(category);
+                  return (
+                    <div
+                      className={`p-3 rounded-lg border ${colors.card}`}
+                    >
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm text-gray-700 font-medium">Middag (12:00-18:00)</span>
-                    <span className={`text-xs font-medium ${
-                      selectedDateAvailability.middag.available > 0 ? "text-green-600" : "text-gray-400"
-                    }`}>
-                      {selectedDateAvailability.middag.available > 0 
-                        ? `${selectedDateAvailability.middag.available} beschikbaar` 
+                    <span className={`text-xs font-medium ${slot.available > 0 ? colors.badge : "text-gray-400"}`}>
+                      {slot.available > 0
+                        ? `${slot.available} beschikbaar`
                         : "Niet beschikbaar"}
                     </span>
                   </div>
-                  {selectedDateAvailability.middag.available > 0 && (
+                  {slot.available > 0 && (
                     <div className="ml-2 space-y-1">
-                      {selectedDateAvailability.middag.staff.map((staffName, index) => (
-                        <div key={index} className="flex items-center gap-2 text-xs text-gray-600">
-                          <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                          <span>{staffName}</span>
-                        </div>
-                      ))}
+                      {slot.staff.map((staffName, index) => {
+                        const status = getStaffStatus(staffName);
+                        const colors = getStatusColors(status);
+                        return (
+                          <div
+                            key={index}
+                            className={`flex items-center gap-2 text-xs ${colors.text}`}
+                          >
+                            <div className={`w-1.5 h-1.5 rounded-full ${colors.dot}`} />
+                            <span>{staffName}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
-                </div>
+                    </div>
+                  );
+                })()}
 
                 {/* Avond */}
-                <div>
+                {(() => {
+                  const slot = selectedDateAvailability.avond;
+                  const category = getSlotCategory(slot.available, "avond", timeOfDay);
+                  const colors = getSlotCardColors(category);
+                  return (
+                    <div
+                      className={`p-3 rounded-lg border ${colors.card}`}
+                    >
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm text-gray-700 font-medium">Avond (18:00-22:00)</span>
-                    <span className={`text-xs font-medium ${
-                      selectedDateAvailability.avond.available > 0 ? "text-green-600" : "text-gray-400"
-                    }`}>
-                      {selectedDateAvailability.avond.available > 0 
-                        ? `${selectedDateAvailability.avond.available} beschikbaar` 
+                    <span className={`text-xs font-medium ${slot.available > 0 ? colors.badge : "text-gray-400"}`}>
+                      {slot.available > 0
+                        ? `${slot.available} beschikbaar`
                         : "Niet beschikbaar"}
                     </span>
                   </div>
-                  {selectedDateAvailability.avond.available > 0 && (
+                  {slot.available > 0 && (
                     <div className="ml-2 space-y-1">
-                      {selectedDateAvailability.avond.staff.map((staffName, index) => (
-                        <div key={index} className="flex items-center gap-2 text-xs text-gray-600">
-                          <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                          <span>{staffName}</span>
-                        </div>
-                      ))}
+                      {slot.staff.map((staffName, index) => {
+                        const status = getStaffStatus(staffName);
+                        const colors = getStatusColors(status);
+                        return (
+                          <div
+                            key={index}
+                            className={`flex items-center gap-2 text-xs ${colors.text}`}
+                          >
+                            <div className={`w-1.5 h-1.5 rounded-full ${colors.dot}`} />
+                            <span>{staffName}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
-                </div>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           )}
