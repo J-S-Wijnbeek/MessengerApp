@@ -22,6 +22,30 @@
       "createdByName": "Peter Hendriks",
       "createdAt": "2026-03-31T19:43:25.252Z",
       "id": "BkObySPtJco"
+    },
+    {
+      "date": "2026-04-30",
+      "timeOfDay": "geen-voorkeur",
+      "notes": "april",
+      "createdByName": "Peter Hendriks",
+      "createdAt": "2026-04-01T08:05:02.261Z",
+      "id": "dPAT6UZTzsk"
+    },
+    {
+      "date": "2026-04-29",
+      "timeOfDay": "middag",
+      "notes": "Test 2\n",
+      "createdByName": "Peter Hendriks",
+      "createdAt": "2026-04-01T08:13:58.238Z",
+      "id": "8PFqm7mhsh8"
+    },
+    {
+      "date": "2026-04-22",
+      "timeOfDay": "geen-voorkeur",
+      "notes": "test",
+      "createdByName": "Peter Hendriks",
+      "createdAt": "2026-04-01T08:22:36.622Z",
+      "id": "WcTwbzS0p9Q"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

@@ -22,14 +22,20 @@ export default function ClientAgenda() {
     isSheetOpen,
     openSheet,
     closeSheet,
-    todayAppointments,
-    laterAppointments,
-    pastAppointments,
+    plannedMockAppointments,
+    todayRequestedAppointments,
+    laterRequestedAppointments,
+    pastRequestedAppointments,
     handleAppointmentRequest,
     isRequestSentOpen,
     setIsRequestSentOpen,
     lastRequest,
   } = useClientAgenda();
+
+  const plannedUpcoming = (plannedMockAppointments as any[]).filter((a) => !a?.isPast);
+  const plannedToday = plannedUpcoming.filter((a) => a?.date === "Vandaag");
+  const plannedLater = plannedUpcoming.filter((a) => a?.date !== "Vandaag");
+  const plannedPast = (plannedMockAppointments as any[]).filter((a) => a?.isPast);
 
   const formatTimeOfDay = (tod: string) => {
     switch (tod) {
@@ -85,6 +91,46 @@ export default function ClientAgenda() {
     </div>
   );
 
+  const PlannedAppointmentRow = ({
+    apt,
+    showDate,
+  }: {
+    apt: {
+      id: number | string;
+      date: string;
+      time: string;
+      title: string;
+      location?: string;
+      staffName?: string;
+      isNow?: boolean;
+    };
+    showDate?: boolean;
+  }) => (
+    <div key={apt.id} className="px-4 py-3 border-b border-gray-100">
+      <div className="flex items-start gap-3">
+        <div className="flex-1">
+          {showDate && <div className="text-xs text-gray-500 mb-1">{apt.date}</div>}
+          <div className="flex items-baseline justify-between gap-3">
+            <div className="font-bold text-lg">{apt.title}</div>
+            <div className="text-sm font-medium text-gray-700">{apt.time}</div>
+          </div>
+          {(apt.staffName || apt.location) ? (
+            <div className="text-sm text-gray-700 mt-1">
+              {apt.staffName ? <span className="font-medium">{apt.staffName}</span> : null}
+              {apt.staffName && apt.location ? <span className="text-gray-400"> • </span> : null}
+              {apt.location ? <span className="text-gray-600">{apt.location}</span> : null}
+            </div>
+          ) : null}
+          {apt.isNow ? (
+            <div className="mt-2 inline-flex items-center rounded-full bg-[#F5A623]/10 px-2.5 py-1 text-xs font-medium text-[#F5A623]">
+              Nu bezig
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-white pb-20 w-full mx-auto">
       <TealHeader title="Mijn Agenda" />
@@ -100,41 +146,64 @@ export default function ClientAgenda() {
 
       {view === "Aankomend" ? (
         <>
-          {todayAppointments.length > 0 ? (
+          {plannedToday.length > 0 ? (
             <>
               <SectionBar title="Vandaag" />
-              {todayAppointments.map((apt) => (
-                <AppointmentRow key={apt.id} apt={apt} />
+              {plannedToday.map((apt) => (
+                <PlannedAppointmentRow key={apt.id} apt={apt} />
               ))}
             </>
           ) : null}
 
-          {laterAppointments.length > 0 ? (
+          {plannedLater.length > 0 ? (
             <>
               <SectionBar title="Later" />
-              {laterAppointments.map((apt) => (
+              {plannedLater.map((apt) => (
+                <PlannedAppointmentRow key={apt.id} apt={apt} showDate />
+              ))}
+            </>
+          ) : null}
+
+          {(plannedToday.length === 0 && plannedLater.length === 0) ? (
+            <div className="text-center text-gray-400 py-12">
+              Geen geplande afspraken
+            </div>
+          ) : null}
+
+          {/* Requested (json-server) */}
+          {(todayRequestedAppointments.length > 0 || laterRequestedAppointments.length > 0) ? (
+            <>
+              <SectionBar title="Aangevraagde afspraken" />
+              {todayRequestedAppointments.map((apt) => (
+                <AppointmentRow key={apt.id} apt={apt} />
+              ))}
+              {laterRequestedAppointments.map((apt) => (
                 <AppointmentRow key={apt.id} apt={apt} showDate />
               ))}
             </>
           ) : null}
-
-          {todayAppointments.length === 0 && laterAppointments.length === 0 && (
-            <div className="text-center text-gray-400 py-12">
-              Geen geplande afspraken
-            </div>
-          )}
         </>
       ) : (
         <>
-          {pastAppointments.length > 0 ? (
-            pastAppointments.map((apt) => (
-              <AppointmentRow key={apt.id} apt={apt} showDate />
+          {plannedPast.length > 0 ? (
+            plannedPast.map((apt) => (
+              <PlannedAppointmentRow key={apt.id} apt={apt} showDate />
             ))
           ) : (
             <div className="text-center text-gray-400 py-12">
               Geen afgelopen afspraken
             </div>
           )}
+
+          {/* Requested (json-server) */}
+          {pastRequestedAppointments.length > 0 ? (
+            <>
+              <SectionBar title="Aangevraagde afspraken" />
+              {pastRequestedAppointments.map((apt) => (
+                <AppointmentRow key={apt.id} apt={apt} showDate />
+              ))}
+            </>
+          ) : null}
         </>
       )}
 
