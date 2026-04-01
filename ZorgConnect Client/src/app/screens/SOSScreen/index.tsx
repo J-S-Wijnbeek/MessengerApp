@@ -8,6 +8,7 @@ export default function SOSScreen() {
     progress,
     isEmergencySent,
     showVerification,
+    location,
     startPressing,
     stopPressing,
     confirmEmergency,
@@ -46,9 +47,15 @@ export default function SOSScreen() {
             </div>
             <div className="bg-gray-100 rounded-lg p-4 mb-2">
               <div className="text-center text-gray-600 mb-2">📍 Locatie tracking actief</div>
-              <div className="h-32 bg-gray-200 rounded flex items-center justify-center">
-                <span className="text-gray-500">🗺️ Kaart</span>
-              </div>
+              {location ? (
+                <div className="text-center text-xs text-gray-500 py-2">
+                  {location.lat.toFixed(5)}, {location.lng.toFixed(5)}
+                </div>
+              ) : (
+                <div className="h-32 bg-gray-200 rounded flex items-center justify-center">
+                  <span className="text-gray-500">🗺️ Kaart</span>
+                </div>
+              )}
             </div>
             <div className="text-center font-bold text-[#1DC6B4] text-lg">
               ~8 min onderweg

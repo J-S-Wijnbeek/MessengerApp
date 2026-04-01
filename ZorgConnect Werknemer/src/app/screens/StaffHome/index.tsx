@@ -52,6 +52,11 @@ export default function StaffHome() {
                   <div className="font-bold text-gray-900 mb-1">{alert.clientName}</div>
                   <div className="text-sm text-gray-600">{alert.timestamp}</div>
                   <div className="text-xs text-gray-500 mt-1">{alert.duration}</div>
+                  {alert.location && (
+                    <div className="text-xs text-gray-500 mt-1">
+                      📍 {alert.location.lat.toFixed(4)}, {alert.location.lng.toFixed(4)}
+                    </div>
+                  )}
                 </div>
                 <button className="bg-[#D9534F] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#C9463F]">
                   Bekijk
