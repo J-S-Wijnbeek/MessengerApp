@@ -9,9 +9,9 @@ export function ToggleRow({ label, description, value, onChange }: ToggleRowProp
   return (
     <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
       <div className="flex flex-col w-3/4">
-        <span className="text-gray-900">{label}</span>
+        <span className="zc-toggle-label text-gray-900">{label}</span>
         {description && (
-          <span className="text-xs text-gray-500">
+          <span className="zc-toggle-description text-sm text-gray-500">
             {description}
           </span>
         )}

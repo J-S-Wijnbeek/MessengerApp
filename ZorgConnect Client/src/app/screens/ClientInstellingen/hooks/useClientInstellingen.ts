@@ -2,6 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { User, Bell, Shield, HelpCircle, FileText, LogOut } from "lucide-react";
 import { useToggle } from "../../../hooks/useToggle";
+import {
+  applyA11yPrefsToDocument,
+  readA11yPrefsFromStorage,
+  writeA11yPrefToStorage,
+} from "../../../hooks/useAccessibilityPreferences";
 
 export function useClientInstellingen() {
   const navigate = useNavigate();
@@ -13,8 +18,20 @@ export function useClientInstellingen() {
     return stored === null ? true : stored === "true";
   });
   const { value: faceId, toggle: toggleFaceId } = useToggle(false);
-  const { value: groteTekst, toggle: toggleGroteTekst } = useToggle(false);
-  const { value: hoogContrast, toggle: toggleHoogContrast } = useToggle(false);
+  const [groteTekst, setGroteTekst] = useState<boolean>(() => readA11yPrefsFromStorage().largeText);
+  const [hoogContrast, setHoogContrast] = useState<boolean>(() => readA11yPrefsFromStorage().highContrast);
+
+  const toggleGroteTekst = (next: boolean) => {
+    setGroteTekst(next);
+    writeA11yPrefToStorage("largeText", next);
+    applyA11yPrefsToDocument({ largeText: next, highContrast: hoogContrast });
+  };
+
+  const toggleHoogContrast = (next: boolean) => {
+    setHoogContrast(next);
+    writeA11yPrefToStorage("highContrast", next);
+    applyA11yPrefsToDocument({ largeText: groteTekst, highContrast: next });
+  };
 
   const handleLogout = () => {
     navigate("/");

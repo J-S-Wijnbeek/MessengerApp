@@ -41,6 +41,44 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+html.a11y-large-text {
+  --font-size: 18px;
+}
+
+html.a11y-high-contrast {
+  --background: #ffffff;
+  --foreground: #000000;
+  --muted: #ffffff;
+  --muted-foreground: #000000;
+  --border: rgba(0, 0, 0, 0.5);
+  --input-background: #ffffff;
+  --switch-background: #000000;
+  --ring: #000000;
+}
+
+html.a11y-high-contrast .zc-sectionbar {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+html.a11y-high-contrast .zc-toggle-label {
+  color: #000000 !important;
+}
+
+html.a11y-high-contrast .zc-toggle-description {
+  color: rgba(0, 0, 0, 0.85) !important;
+}
+
+html.a11y-large-text .zc-sectionbar {
+  font-size: 1.125rem;
+  line-height: 1.4;
+}
+
+html.a11y-large-text .zc-toggle-description {
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
