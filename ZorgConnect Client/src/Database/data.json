@@ -1,13 +1,6 @@
 {
   "appointmentRequests": [
     {
-      "date": "2026-04-03",
-      "timeOfDay": "avond",
-      "notes": "test",
-      "createdAt": "2026-03-31T11:39:39.098Z",
-      "id": "2o5DXnASd7I"
-    },
-    {
       "date": "2026-04-02",
       "timeOfDay": "middag",
       "notes": "Test 2",

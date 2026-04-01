@@ -3,7 +3,11 @@ import { useEffect } from "react";
 const LARGE_TEXT_KEY = "a11yLargeText";
 const HIGH_CONTRAST_KEY = "a11yHighContrast";
 const DARK_MODE_KEY = "uiDarkMode";
+const COLOR_THEME_KEY = "uiColorTheme";
 const A11Y_EVENT = "a11y-settings-changed";
+
+export const COLOR_THEME_IDS = ["default", "ocean", "forest", "sunset", "lavender"] as const;
+export type ColorThemeId = (typeof COLOR_THEME_IDS)[number];
 
 function readBool(key: string, fallback: boolean) {
   if (typeof window === "undefined") return fallback;
@@ -32,6 +36,33 @@ export function readA11yPrefsFromStorage() {
   };
 }
 
+function isColorThemeId(value: string | null): value is ColorThemeId {
+  return value !== null && (COLOR_THEME_IDS as readonly string[]).includes(value);
+}
+
+export function readColorThemeFromStorage(): ColorThemeId {
+  if (typeof window === "undefined") return "default";
+  const stored = window.localStorage.getItem(COLOR_THEME_KEY);
+  if (stored && isColorThemeId(stored)) return stored;
+  return "default";
+}
+
+export function applyColorThemeToDocument(themeId: ColorThemeId) {
+  if (typeof document === "undefined") return;
+  const el = document.documentElement;
+  if (themeId === "default") {
+    el.removeAttribute("data-color-theme");
+  } else {
+    el.setAttribute("data-color-theme", themeId);
+  }
+}
+
+export function writeColorThemeToStorage(themeId: ColorThemeId) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(COLOR_THEME_KEY, themeId);
+  window.dispatchEvent(new Event(A11Y_EVENT));
+}
+
 export function writeA11yPrefToStorage(
   key: "largeText" | "highContrast" | "darkMode",
   value: boolean
@@ -45,7 +76,10 @@ export function writeA11yPrefToStorage(
 
 export function useAccessibilityPreferences() {
   useEffect(() => {
-    const apply = () => applyA11yPrefsToDocument(readA11yPrefsFromStorage());
+    const apply = () => {
+      applyA11yPrefsToDocument(readA11yPrefsFromStorage());
+      applyColorThemeToDocument(readColorThemeFromStorage());
+    };
 
     apply();
 

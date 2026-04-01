@@ -4,6 +4,15 @@ import { SectionBar } from "../../components/SectionBar";
 import { ChevronRight } from "lucide-react";
 import { ToggleRow } from "../../components/ToggleRow";
 import { useClientInstellingen, type ClientInstellingenHook } from "./hooks/useClientInstellingen";
+import type { ColorThemeId } from "../../hooks/useAccessibilityPreferences";
+
+const THEME_CHOICES: { id: ColorThemeId; label: string; swatch: [string, string] }[] = [
+  { id: "default", label: "Standaard", swatch: ["#F5A623", "#1DC6B4"] },
+  { id: "ocean", label: "Oceaan", swatch: ["#2563eb", "#0891b2"] },
+  { id: "forest", label: "Bos", swatch: ["#15803d", "#0d9488"] },
+  { id: "sunset", label: "Zonsondergang", swatch: ["#ea580c", "#db2777"] },
+  { id: "lavender", label: "Lavendel", swatch: ["#7c3aed", "#c026d3"] },
+];
 
 export default function ClientInstellingen() {
   const {
@@ -22,6 +31,8 @@ export default function ClientInstellingen() {
     toggleHoogContrast,
     darkMode,
     toggleDarkMode,
+    colorTheme,
+    setColorTheme,
     handleLogout,
   } = useClientInstellingen() as ClientInstellingenHook;
 
@@ -95,7 +106,46 @@ export default function ClientInstellingen() {
       /> */}
 
       {/* Accessibility */}
-      <SectionBar title="Toegankelijkheid" />
+      <SectionBar title="Toegankelijkheid en uiterlijk" />
+      <div className="px-4 py-4 border-b border-border">
+        <div className="text-foreground font-medium zc-toggle-label mb-3">Themakleur</div>
+        <p className="text-sm text-muted-foreground mb-3">
+          Kies welke hoofd- en accentkleur de app gebruikt. Standaard is de oorspronkelijke ZorgConnect-stijl.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {THEME_CHOICES.map(({ id, label, swatch }) => {
+            const selected = colorTheme === id;
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setColorTheme(id)}
+                className={`flex flex-col items-center gap-1.5 rounded-xl border-2 px-2.5 py-2 min-w-[4.75rem] transition-colors ${
+                  selected
+                    ? "border-primary bg-primary/5 ring-2 ring-primary/30"
+                    : "border-border bg-background hover:bg-muted/60"
+                }`}
+              >
+                <span className="flex gap-1">
+                  <span
+                    className="h-6 w-6 rounded-full border border-black/10 shadow-sm"
+                    style={{ backgroundColor: swatch[0] }}
+                    aria-hidden
+                  />
+                  <span
+                    className="h-6 w-6 rounded-full border border-black/10 shadow-sm"
+                    style={{ backgroundColor: swatch[1] }}
+                    aria-hidden
+                  />
+                </span>
+                <span className="text-xs font-medium text-center leading-tight text-foreground max-w-[5.5rem]">
+                  {label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
       <ToggleRow
         label="Grote tekst"
         value={groteTekst}

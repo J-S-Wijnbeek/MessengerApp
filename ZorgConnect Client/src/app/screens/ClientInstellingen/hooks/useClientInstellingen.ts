@@ -6,6 +6,9 @@ import {
   applyA11yPrefsToDocument,
   readA11yPrefsFromStorage,
   writeA11yPrefToStorage,
+  readColorThemeFromStorage,
+  writeColorThemeToStorage,
+  type ColorThemeId,
 } from "../../../hooks/useAccessibilityPreferences";
 
 export type ClientInstellingenHook = {
@@ -24,6 +27,8 @@ export type ClientInstellingenHook = {
   toggleHoogContrast: (next: boolean) => void;
   darkMode: boolean;
   toggleDarkMode: (next: boolean) => void;
+  colorTheme: ColorThemeId;
+  setColorTheme: (theme: ColorThemeId) => void;
   handleLogout: () => void;
   settingsOptions: Array<{
     icon: any;
@@ -46,6 +51,7 @@ export function useClientInstellingen(): ClientInstellingenHook {
   const [groteTekst, setGroteTekst] = useState<boolean>(() => readA11yPrefsFromStorage().largeText);
   const [hoogContrast, setHoogContrast] = useState<boolean>(() => readA11yPrefsFromStorage().highContrast);
   const [darkMode, setDarkMode] = useState<boolean>(() => readA11yPrefsFromStorage().darkMode);
+  const [colorTheme, setColorThemeState] = useState<ColorThemeId>(() => readColorThemeFromStorage());
 
   const toggleGroteTekst = (next: boolean) => {
     setGroteTekst(next);
@@ -63,6 +69,11 @@ export function useClientInstellingen(): ClientInstellingenHook {
     setDarkMode(next);
     writeA11yPrefToStorage("darkMode", next);
     applyA11yPrefsToDocument({ largeText: groteTekst, highContrast: hoogContrast, darkMode: next });
+  };
+
+  const setColorTheme = (theme: ColorThemeId) => {
+    setColorThemeState(theme);
+    writeColorThemeToStorage(theme);
   };
 
   const handleLogout = () => {
@@ -102,6 +113,8 @@ export function useClientInstellingen(): ClientInstellingenHook {
     toggleHoogContrast,
     darkMode,
     toggleDarkMode,
+    colorTheme,
+    setColorTheme,
     handleLogout,
     settingsOptions,
   };
