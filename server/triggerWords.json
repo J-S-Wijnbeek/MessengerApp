@@ -1,13 +1,18 @@
 {
   "triggerWords": [
-    "help",
-    "emergency",
-    "urgent",
-    "suicide",
-    "panic",
-    "abuse",
-    "danger",
-    "angst",
-    "stress"
+  "hulp",
+  "noodgeval",
+  "dringend",
+  "zelfmoord",
+  "paniek",
+  "misbruik",
+  "gevaar",
+  "angst",
+  "stress",
+  "depressie",
+  "angststoornis",
+  "crisis",
+  "aanval",
+  "somber"
   ]
 }
