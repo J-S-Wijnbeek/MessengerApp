@@ -1,0 +1,28 @@
+{
+  "appointmentRequests": [
+    {
+      "date": "2026-04-03",
+      "timeOfDay": "avond",
+      "notes": "test",
+      "createdAt": "2026-03-31T11:39:39.098Z",
+      "id": "2o5DXnASd7I"
+    },
+    {
+      "date": "2026-04-02",
+      "timeOfDay": "middag",
+      "notes": "Test 2",
+      "createdByName": "Peter Hendriks",
+      "createdAt": "2026-03-31T11:41:02.763Z",
+      "id": "1tW5QwBTTPA"
+    },
+    {
+      "date": "2026-04-16",
+      "timeOfDay": "geen-voorkeur",
+      "notes": "",
+      "createdByName": "Peter Hendriks",
+      "createdAt": "2026-03-31T19:43:25.252Z",
+      "id": "BkObySPtJco"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}
