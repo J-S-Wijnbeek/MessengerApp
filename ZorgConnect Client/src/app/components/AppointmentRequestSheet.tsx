@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { mockAvailability, mockStaff, mockCoupledCareWorkers, mockOtherStaff } from "../data/mockData";
 
@@ -93,12 +93,31 @@ export function AppointmentRequestSheet({
   const [timeOfDay, setTimeOfDay] = useState<"ochtend" | "middag" | "avond" | "geen-voorkeur">("geen-voorkeur");
   const [date, setDate] = useState("");
   const [notes, setNotes] = useState("");
-  const [currentMonth, setCurrentMonth] = useState(new Date(2026, 2)); // March 2026
+  const [currentMonth, setCurrentMonth] = useState(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  });
+
+  const minBookableDate = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() + 2); // 48+ hours in advance (today + 2 days)
+    return d;
+  }, []);
+
+  const isBeforeMinBookable = (d: Date) => d.getTime() < minBookableDate.getTime();
+
+  const toISODate = (d: Date) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
 
   // Get availability status for a date
   const getDateAvailability = (dateStr: string) => {
     const availability = mockAvailability[dateStr];
-    if (!availability) return "none";
+    if (!availability) return "unknown";
 
     if (timeOfDay === "geen-voorkeur") {
       const total = availability.ochtend.available + availability.middag.available + availability.avond.available;
@@ -126,8 +145,8 @@ export function AppointmentRequestSheet({
       date: number;
       dateStr: string;
       isCurrentMonth: boolean;
-      isPast: boolean;
-      availability: "high" | "limited" | "none";
+      isDisabled: boolean;
+      availability: "high" | "limited" | "none" | "unknown";
     }> = [];
 
     // Add empty cells for days before month starts
@@ -136,29 +155,28 @@ export function AppointmentRequestSheet({
         date: 0,
         dateStr: "",
         isCurrentMonth: false,
-        isPast: false,
+        isDisabled: true,
         availability: "none",
       });
     }
 
     // Add days of the month
-    const today = new Date(2026, 2, 30); // March 30, 2026
     for (let day = 1; day <= daysInMonth; day++) {
       const currentDate = new Date(year, month, day);
-      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      const isPast = currentDate < today;
+      const dateStr = toISODate(currentDate);
+      const isDisabled = isBeforeMinBookable(currentDate);
 
       days.push({
         date: day,
         dateStr,
         isCurrentMonth: true,
-        isPast,
-        availability: isPast ? "none" : getDateAvailability(dateStr),
+        isDisabled,
+        availability: isDisabled ? "none" : getDateAvailability(dateStr),
       });
     }
 
     return days;
-  }, [currentMonth, timeOfDay]);
+  }, [currentMonth, timeOfDay, minBookableDate]);
 
   const selectedDateAvailability = date ? mockAvailability[date] : null;
 
@@ -328,7 +346,7 @@ export function AppointmentRequestSheet({
                   let hoverClass = "hover:bg-gray-50";
                   let cursor = "cursor-pointer";
                   
-                  if (day.isPast) {
+                  if (day.isDisabled) {
                     bgColor = "bg-gray-100";
                     textColor = "text-gray-300";
                     cursor = "cursor-not-allowed";
@@ -341,6 +359,10 @@ export function AppointmentRequestSheet({
                     bgColor = "bg-orange-100";
                     textColor = "text-orange-900";
                     hoverClass = "hover:bg-orange-200";
+                  } else if (day.availability === "unknown") {
+                    bgColor = "bg-orange-50";
+                    textColor = "text-orange-900";
+                    hoverClass = "hover:bg-orange-100";
                   } else if (day.availability === "none") {
                     bgColor = "bg-gray-100";
                     textColor = "text-gray-400";
@@ -357,11 +379,11 @@ export function AppointmentRequestSheet({
                     <button
                       key={index}
                       onClick={() => {
-                        if (!day.isPast && day.availability !== "none") {
+                        if (!day.isDisabled && day.availability !== "none") {
                           setDate(day.dateStr);
                         }
                       }}
-                      disabled={day.isPast || day.availability === "none"}
+                      disabled={day.isDisabled || day.availability === "none"}
                       className={`aspect-square border-b border-r border-gray-200 flex items-center justify-center text-sm font-medium transition-colors ${bgColor} ${textColor} ${hoverClass} ${cursor} ${
                         isSelected ? "ring-2 ring-[#F5A623] ring-inset" : ""
                       }`}
@@ -376,7 +398,7 @@ export function AppointmentRequestSheet({
             {/* Legend */}
             <div className="mt-3 p-3 bg-gray-50 rounded-lg">
               <div className="text-xs font-medium text-gray-700 mb-2">Legenda:</div>
-              <div className="grid grid-cols-3 gap-2 text-xs">
+              <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="flex items-center gap-1.5">
                   <div className="w-4 h-4 bg-green-100 border border-green-300 rounded" />
                   <span className="text-gray-600">Goed beschikbaar</span>
@@ -386,14 +408,29 @@ export function AppointmentRequestSheet({
                   <span className="text-gray-600">Beperkt</span>
                 </div>
                 <div className="flex items-center gap-1.5">
+                  <div className="w-4 h-4 bg-orange-50 border border-orange-200 rounded" />
+                  <span className="text-gray-600">Rooster onbekend</span>
+                </div>
+                <div className="flex items-center gap-1.5">
                   <div className="w-4 h-4 bg-gray-100 border border-gray-300 rounded" />
-                  <span className="text-gray-600">Niet beschikbaar</span>
+                  <span className="text-gray-600">Niet beschikbaar / te vroeg</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Availability Display for Selected Date */}
+          {date && !selectedDateAvailability && (
+            <div className="mb-4">
+              <div className="p-3 rounded-lg border border-orange-200 bg-orange-50">
+                <div className="text-sm font-medium text-orange-900">Rooster onbekend</div>
+                <div className="text-xs text-orange-800 mt-1">
+                  Je kunt deze datum wel aanvragen. We bevestigen de afspraak zodra het rooster bekend is.
+                </div>
+              </div>
+            </div>
+          )}
+
           {selectedDateAvailability && date && (
             <div className="mb-4">
               <div className="text-sm font-medium text-gray-900 mb-3">Beschikbaarheid op deze datum:</div>

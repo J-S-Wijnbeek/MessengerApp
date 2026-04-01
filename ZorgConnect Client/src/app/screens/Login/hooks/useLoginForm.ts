@@ -6,7 +6,8 @@ export function useLoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = () => {
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
     if (email && password) {
       navigate("/home");
     }

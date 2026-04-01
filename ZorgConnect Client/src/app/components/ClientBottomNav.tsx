@@ -1,3 +1,4 @@
+import * as React from "react";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router";
 import { Home, MessageCircle, Calendar, Settings, Siren } from "lucide-react";

@@ -1,15 +1,14 @@
 import { useEffect, useState } from "react";
-import agendaData from "../../../../Database/data.json";
+import { useCurrentUserName } from "../../../hooks/useCurrentUserName";
 
 // Types
 export interface Appointment {
-  id: number;
+  id: string;
   date: string;
-  time: string;
-  type: "call" | "meeting";
-  staffName: string;
-  isPast: boolean;
-  isNow: boolean;
+  timeOfDay: "ochtend" | "middag" | "avond" | "geen-voorkeur";
+  notes: string;
+  createdByName: string;
+  createdAt: string;
 }
 
 export interface AppointmentRequest {
@@ -18,77 +17,66 @@ export interface AppointmentRequest {
   notes: string;
 }
 
-// Type guard for Appointment
-function isAppointment(obj: any): obj is Appointment {
-  return obj &&
-    typeof obj.id === "number" &&
-    typeof obj.date === "string" &&
-    typeof obj.time === "string" &&
-    (obj.type === "call" || obj.type === "meeting") &&
-    typeof obj.staffName === "string" &&
-    typeof obj.isPast === "boolean" &&
-    typeof obj.isNow === "boolean";
-}
 
-// Haal afspraken uit localStorage, of uit data.json als localStorage leeg is
-function getStoredAppointments(): Appointment[] {
-  const stored = localStorage.getItem("appointments");
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed) && parsed.every(isAppointment)) return parsed;
-      if (parsed && Array.isArray(parsed.appointments) && parsed.appointments.every(isAppointment)) return parsed.appointments;
-    } catch {
-      // fallback op data.json
-    }
-  }
-  // Always return a valid array
-  return Array.isArray(agendaData.appointments) && agendaData.appointments.every(isAppointment)
-    ? agendaData.appointments
-    : [];
-}
 
 export function useClientAgenda() {
-  // TODO: Replace with real logged-in user once auth/profile state exists.
-  const currentUserName = "Peter Hendriks";
+  const currentUserName = useCurrentUserName();
+  const dbBaseUrl = import.meta.env.VITE_DATABASE_URL || "http://localhost:3001";
+  const appointmentRequestsUrl = `${dbBaseUrl.replace(/\/$/, "")}/appointmentRequests`;
 
   const [view, setView] = useState<string>("Aankomend");
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isRequestSentOpen, setIsRequestSentOpen] = useState(false);
   const [lastRequest, setLastRequest] = useState<AppointmentRequest | null>(null);
-  const [appointments, setAppointments] = useState<Appointment[]>(getStoredAppointments());
 
-  // Sla afspraken op in localStorage bij elke wijziging
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+
+  // Ophalen van afspraken uit de backend
   useEffect(() => {
-    localStorage.setItem("appointments", JSON.stringify(appointments));
-  }, [appointments]);
+    async function fetchAppointments() {
+      try {
+        const res = await fetch(appointmentRequestsUrl, { method: "GET" });
+        if (res.ok) {
+          const data = await res.json();
+          setAppointments(data);
+        }
+      } catch (e) {
+        console.warn('Kan afspraken niet ophalen:', e);
+      }
+    }
+    fetchAppointments();
+  }, [appointmentRequestsUrl]);
 
   // Filter afspraken voor vandaag, later en afgelopen
-  const todayAppointments = appointments.filter(
-    (a) => a.date === "Vandaag" && !a.isPast
-  );
-  const laterAppointments = appointments.filter(
-    (a) => a.date !== "Vandaag" && !a.isPast
-  );
-  const pastAppointments = appointments.filter((a) => a.isPast);
+
+  // Simpele datumvergelijking (pas aan naar jouw logica)
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayAppointments = appointments.filter((a) => a.date === todayStr);
+  const laterAppointments = appointments.filter((a) => a.date > todayStr);
+  const pastAppointments = appointments.filter((a) => a.date < todayStr);
 
   // Voeg nieuwe afspraak toe vanuit AppointmentRequestSheet
   const handleAppointmentRequest = (request: AppointmentRequest) => {
-    console.log("Appointment request:", request);
     (async () => {
       try {
-        await fetch("http://localhost:3001/appointmentRequests", {
+        const res = await fetch(appointmentRequestsUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            ...request,
+            date: request.date,
+            timeOfDay: request.timeOfDay,
+            notes: request.notes,
             createdByName: currentUserName,
             createdAt: new Date().toISOString(),
           }),
         });
+        if (res.ok) {
+          // json-server returns the created object; add it optimistically
+          const created = await res.json();
+          setAppointments((prev) => [...prev, created]);
+        }
       } catch (e) {
-        // Best-effort save; UI feedback still shown even if db is offline.
-        console.warn("Failed to save appointment request:", e);
+        console.warn('Failed to save appointment request:', e);
       } finally {
         setLastRequest(request);
         setIsRequestSentOpen(true);
