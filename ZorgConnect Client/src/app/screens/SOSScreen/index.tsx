@@ -26,7 +26,7 @@ export default function SOSScreen() {
 
         <div className="flex-1 flex flex-col items-center justify-center px-8">
           {/* Success Icon */}
-          <CheckCircle size={80} className="text-green-500 mb-6" />
+          <CheckCircle size={80} className="text-green-500 my-4" />
 
           <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">
             Noodmelding verstuurd!
@@ -64,7 +64,7 @@ export default function SOSScreen() {
         </div>
 
         {/* Footer */}
-        <div className="text-center text-sm text-gray-500 px-8 pb-4">
+        <div className="text-center font-bold text-md text-gray-500 px-8 py-4">
           Bij levensgevaar: bel 112
         </div>
 
@@ -82,7 +82,7 @@ export default function SOSScreen() {
 
       <div className="flex-1 flex flex-col items-center justify-center px-8">
         {/* Shield Icon */}
-        <Shield size={80} className="text-[#D9534F] mb-6" />
+        <Shield size={80} className="text-[#D9534F] my-4" />
 
         <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">
           Noodmelding versturen?
@@ -101,7 +101,7 @@ export default function SOSScreen() {
             <p className="text-sm text-gray-700 mb-4 text-center">
               Weet je zeker dat je een noodmelding wilt versturen naar je zorgteam?
             </p>
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 items-center">
               <button
                 onClick={confirmEmergency}
                 className="w-full bg-[#D9534F] text-white py-3 rounded-lg font-semibold hover:bg-[#C64541] transition-colors"
@@ -150,7 +150,7 @@ export default function SOSScreen() {
       </div>
 
       {/* Footer */}
-      <div className="text-center text-sm text-gray-500 px-8 pb-4">
+      <div className="text-center font-bold text-md text-gray-500 px-8 py-4">
         Bij levensgevaar: bel 112
       </div>
 
