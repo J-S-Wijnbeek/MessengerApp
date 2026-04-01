@@ -45,7 +45,7 @@ export default function Gesprekken() {
                     Opgepakt door: {sos.handledByInitials}
                   </div>
                 </div>
-                {sos.status === "resolved" ? (
+                {sos.status === "Afgehandeld" ? (
                   <CheckCircle size={20} className="text-green-500 flex-shrink-0" />
                 ) : (
                   <Clock size={20} className="text-[#F5A623] flex-shrink-0" />
