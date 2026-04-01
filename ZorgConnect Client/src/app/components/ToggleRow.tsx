@@ -17,6 +17,9 @@ export function ToggleRow({ label, description, value, onChange }: ToggleRowProp
         )}
       </div>
       <button
+        type="button"
+        aria-label={`Toggle ${label}`}
+        aria-pressed={value}
         onClick={() => onChange(!value)}
         className={`w-12 h-7 rounded-full transition-colors ${
           value ? "bg-[#F5A623]" : "bg-gray-300"
