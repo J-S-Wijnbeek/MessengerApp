@@ -21,6 +21,8 @@ export default function ClientInstellingen() {
     hoogContrast,
     toggleHoogContrast,
     handleLogout,
+    locatieDelen,
+    toggleLocatieDelen,
   } = useClientInstellingen();
 
   return (
@@ -74,6 +76,12 @@ export default function ClientInstellingen() {
           </button>
         </div>
       )}
+      {/* {locatieDelen} */}
+      <ToggleRow
+        label="Locatie delen"
+        value={locatieDelen}
+        onChange={toggleLocatieDelen}
+      />
 
       {/* Security */}
       <SectionBar title="Beveiliging" />
