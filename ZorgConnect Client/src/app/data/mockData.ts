@@ -519,4 +519,208 @@ export const mockAvailability: Record<string, {
       staff: ["Emma Jansen"],
     },
   },
+  "2026-04-05": {
+    ochtend: {
+      available: 2,
+      staff: ["Jeroen Bakker", "Emma Jansen"],
+    },
+    middag: {
+      available: 1,
+      staff: ["Sophie van der Berg"],
+    },
+    avond: {
+      available: 3,
+      staff: ["Sophie van der Berg", "Lucas de Vries", "Emma Jansen"],
+    },
+  },
+  "2026-04-06": {
+    ochtend: {
+      available: 0,
+      staff: [],
+    },
+    middag: {
+      available: 2,
+      staff: ["Jeroen Bakker", "Lucas de Vries"],
+    },
+    avond: {
+      available: 1,
+      staff: ["Sophie van der Berg"],
+    },
+  },
+  "2026-04-07": {
+    ochtend: {
+      available: 3,
+      staff: ["Sophie van der Berg", "Jeroen Bakker", "Emma Jansen"],
+    },
+    middag: {
+      available: 1,
+      staff: ["Emma Jansen"],
+    },
+    avond: {
+      available: 2,
+      staff: ["Jeroen Bakker", "Lucas de Vries"],
+    },
+  },
+  "2026-04-08": {
+    ochtend: {
+      available: 1,
+      staff: ["Lucas de Vries"],
+    },
+    middag: {
+      available: 3,
+      staff: ["Sophie van der Berg", "Jeroen Bakker", "Emma Jansen"],
+    },
+    avond: {
+      available: 2,
+      staff: ["Sophie van der Berg", "Emma Jansen"],
+    },
+  },
+  "2026-04-09": {
+    ochtend: {
+      available: 2,
+      staff: ["Sophie van der Berg", "Jeroen Bakker"],
+    },
+    middag: {
+      available: 0,
+      staff: [],
+    },
+    avond: {
+      available: 2,
+      staff: ["Emma Jansen", "Lucas de Vries"],
+    },
+  },
+  "2026-04-10": {
+    ochtend: {
+      available: 4,
+      staff: ["Sophie van der Berg", "Jeroen Bakker", "Emma Jansen", "Lucas de Vries"],
+    },
+    middag: {
+      available: 2,
+      staff: ["Jeroen Bakker", "Emma Jansen"],
+    },
+    avond: {
+      available: 0,
+      staff: [],
+    },
+  },
+  "2026-04-11": {
+    ochtend: {
+      available: 1,
+      staff: ["Emma Jansen"],
+    },
+    middag: {
+      available: 2,
+      staff: ["Sophie van der Berg", "Lucas de Vries"],
+    },
+    avond: {
+      available: 1,
+      staff: ["Jeroen Bakker"],
+    },
+  },
+  "2026-04-12": {
+    ochtend: {
+      available: 0,
+      staff: [],
+    },
+    middag: {
+      available: 1,
+      staff: ["Sophie van der Berg"],
+    },
+    avond: {
+      available: 2,
+      staff: ["Emma Jansen", "Lucas de Vries"],
+    },
+  },
+  "2026-04-13": {
+    ochtend: {
+      available: 2,
+      staff: ["Jeroen Bakker", "Lucas de Vries"],
+    },
+    middag: {
+      available: 3,
+      staff: ["Sophie van der Berg", "Jeroen Bakker", "Emma Jansen"],
+    },
+    avond: {
+      available: 1,
+      staff: ["Sophie van der Berg"],
+    },
+  },
+  "2026-04-14": {
+    ochtend: {
+      available: 1,
+      staff: ["Sophie van der Berg"],
+    },
+    middag: {
+      available: 0,
+      staff: [],
+    },
+    avond: {
+      available: 3,
+      staff: ["Jeroen Bakker", "Emma Jansen", "Lucas de Vries"],
+    },
+  },
+  "2026-04-15": {
+    ochtend: {
+      available: 3,
+      staff: ["Sophie van der Berg", "Jeroen Bakker", "Emma Jansen"],
+    },
+    middag: {
+      available: 2,
+      staff: ["Emma Jansen", "Lucas de Vries"],
+    },
+    avond: {
+      available: 1,
+      staff: ["Jeroen Bakker"],
+    },
+  },
+  "2026-04-16": {
+    ochtend: {
+      available: 2,
+      staff: ["Sophie van der Berg", "Lucas de Vries"],
+    },
+    middag: {
+      available: 1,
+      staff: ["Jeroen Bakker"],
+    },
+    avond: {
+      available: 2,
+      staff: ["Emma Jansen", "Sophie van der Berg"],
+    },
+  },
 };
+
+export type MockAppointmentRequest = {
+  id: string;
+  date: string; // YYYY-MM-DD
+  timeOfDay: "ochtend" | "middag" | "avond" | "geen-voorkeur";
+  notes: string;
+  createdByName: string;
+  createdAt: string;
+};
+
+export const mockAppointmentRequests: MockAppointmentRequest[] = [
+  {
+    id: "mock-1",
+    date: "2026-04-02",
+    timeOfDay: "middag",
+    notes: "Test 2",
+    createdByName: "Peter Hendriks",
+    createdAt: "2026-03-31T11:41:02.763Z",
+  },
+  {
+    id: "mock-2",
+    date: "2026-04-03",
+    timeOfDay: "avond",
+    notes: "test",
+    createdByName: "Peter Hendriks",
+    createdAt: "2026-03-31T11:39:39.098Z",
+  },
+  {
+    id: "mock-3",
+    date: "2026-04-16",
+    timeOfDay: "geen-voorkeur",
+    notes: "",
+    createdByName: "Peter Hendriks",
+    createdAt: "2026-03-31T19:43:25.252Z",
+  },
+];
