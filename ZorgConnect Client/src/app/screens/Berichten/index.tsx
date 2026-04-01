@@ -41,7 +41,10 @@ export default function Berichten() {
   }, [selectedChat]);
 
   useEffect(() => {
-    const socket = io("http://localhost:3001");
+    const socket = io("http://localhost:3001", {
+      reconnectionAttempts: 3,
+      timeout: 5000,
+    });
     socketRef.current = socket;
 
     const handleHistory = ({ chatId, history }: any) => {
