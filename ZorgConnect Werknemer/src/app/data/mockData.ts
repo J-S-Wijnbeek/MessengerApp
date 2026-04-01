@@ -389,30 +389,35 @@ export const mockUnlinkedClients = [
     name: "Robin Mulder",
     initials: "RM",
     status: "Actief",
+    address: "Kerkstraat 12, Haarlem",
   },
   {
     id: 9,
     name: "Eva Vermeulen",
     initials: "EV",
     status: "Actief",
+    address: "Molenweg 7, Nijmegen",
   },
   {
     id: 10,
     name: "Thijs Hoekstra",
     initials: "TH",
     status: "Actief",
+    address: "Wilhelminapark 3, Eindhoven",
   },
   {
     id: 11,
     name: "Nina Bos",
     initials: "NB",
     status: "Actief",
+    address: "Prins Hendriklaan 22, Den Bosch",
   },
   {
     id: 12,
     name: "Lars Peters",
     initials: "LP",
     status: "Actief",
+    address: "Julianastraat 18, Arnhem",
   },
 ];
 

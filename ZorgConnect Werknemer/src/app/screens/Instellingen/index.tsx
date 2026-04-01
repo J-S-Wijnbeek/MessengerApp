@@ -116,6 +116,9 @@ export default function Instellingen() {
         <div className="flex items-center justify-between mb-4">
           <span className="font-medium text-gray-900">In dienst</span>
           <button
+            type="button"
+            aria-label="Toggle in dienst"
+            aria-pressed={isOnDuty}
             onClick={() => setIsOnDuty(!isOnDuty)}
             className={`relative w-14 h-8 rounded-full transition-colors ${
               isOnDuty ? "bg-[#1DC6B4]" : "bg-gray-300"
@@ -242,6 +245,9 @@ export default function Instellingen() {
               </div>
             </div>
             <button
+              type="button"
+              aria-label="Toggle noodgevallen ontvangen"
+              aria-pressed={receiveEmergencyCalls}
               onClick={() => setReceiveEmergencyCalls(!receiveEmergencyCalls)}
               className={`relative w-14 h-8 rounded-full transition-colors ${
                 receiveEmergencyCalls ? "bg-[#D9534F]" : "bg-gray-300"
