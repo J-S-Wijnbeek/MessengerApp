@@ -486,6 +486,24 @@ export const mockAppointments = [
   },
 ];
 
+export type EmergencyContact = {
+  id: string;
+  name: string;
+  relation: string;
+  phone: string;
+  updatedAt: string; // ISO string
+};
+
+export const mockEmergencyContacts: EmergencyContact[] = [
+  {
+    id: "ec-1",
+    name: "Maria Hendriks",
+    relation: "Moeder",
+    phone: "06 9876 5432",
+    updatedAt: "2026-03-31T09:00:00.000Z",
+  },
+];
+
 // Mock availability data for appointment scheduling
 // Each date string maps to availability per time of day
 export const mockAvailability: Record<string, {

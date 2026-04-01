@@ -8,10 +8,10 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: #030213;
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.95 0.0058 264.53);
-  --secondary-foreground: #030213;
+  --primary: #F5A623;
+  --primary-foreground: #ffffff;
+  --secondary: #1DC6B4;
+  --secondary-foreground: #ffffff;
   --muted: #ececf0;
   --muted-foreground: #717182;
   --accent: #e9ebef;
@@ -46,27 +46,29 @@ html.a11y-large-text {
 }
 
 html.a11y-high-contrast {
-  --background: #ffffff;
-  --foreground: #000000;
-  --muted: #ffffff;
-  --muted-foreground: #000000;
-  --border: rgba(0, 0, 0, 0.5);
-  --input-background: #ffffff;
-  --switch-background: #000000;
-  --ring: #000000;
+  /* Increase contrast without breaking dark mode:
+     - heavier typography everywhere
+     - force max-contrast foreground colors depending on mode */
+  --font-weight-medium: 650;
+  --font-weight-normal: 500;
 }
 
-html.a11y-high-contrast .zc-sectionbar {
-  background: #000000 !important;
-  color: #ffffff !important;
+html.a11y-high-contrast body {
+  font-weight: var(--font-weight-normal);
 }
 
 html.a11y-high-contrast .zc-toggle-label {
-  color: #000000 !important;
+  font-weight: var(--font-weight-medium);
 }
 
-html.a11y-high-contrast .zc-toggle-description {
-  color: rgba(0, 0, 0, 0.85) !important;
+html.a11y-high-contrast:not(.dark) {
+  --foreground: #000000;
+  --muted-foreground: rgba(0, 0, 0, 0.85);
+}
+
+html.a11y-high-contrast.dark {
+  --foreground: #ffffff;
+  --muted-foreground: rgba(255, 255, 255, 0.85);
 }
 
 html.a11y-large-text .zc-sectionbar {
@@ -80,22 +82,22 @@ html.a11y-large-text .zc-toggle-description {
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
+  --background: #454545;
+  --foreground: #ffffff;
   --card: oklch(0.145 0 0);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.145 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
+  --primary: #F5A623;
+  --primary-foreground: #ffffff;
+  --secondary: #1DC6B4;
+  --secondary-foreground: #ffffff;
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
   --accent: oklch(0.269 0 0);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --destructive-foreground: #ffffff;
   --border: oklch(0.269 0 0);
   --input: oklch(0.269 0 0);
   --ring: oklch(0.439 0 0);

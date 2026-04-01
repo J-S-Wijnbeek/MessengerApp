@@ -32,13 +32,13 @@ export function ClientBottomNav() {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center py-2 w-full mx-auto">
+    <div className="fixed bottom-0 left-0 right-0 bg-background text-foreground border-t border-border flex justify-around items-center py-2 w-full mx-auto">
       {navItems.map((item) => (
         <Link
           key={item.path}
           to={item.path}
           className={`flex flex-col items-center gap-1 px-2 py-2 ${
-            isActive(item.path) ? "text-[#F5A623]" : "text-gray-400"
+            isActive(item.path) ? "text-primary" : "text-muted-foreground"
           }`}
         >
           <item.icon size={24} />

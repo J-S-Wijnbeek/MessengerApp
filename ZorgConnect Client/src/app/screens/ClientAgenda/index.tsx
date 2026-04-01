@@ -74,18 +74,18 @@ export default function ClientAgenda() {
     };
     showDate?: boolean;
   }) => (
-    <div key={apt.id} className="px-4 py-3 border-b border-gray-100">
+    <div key={apt.id} className="px-4 py-3 border-b border-border">
       <div className="flex items-start gap-3">
         <div className="flex-1">
-          {showDate && <div className="text-xs text-gray-500 mb-1">{formatDateNL(apt.date)}</div>}
+          {showDate && <div className="text-xs text-muted-foreground mb-1">{formatDateNL(apt.date)}</div>}
           <div className="font-bold text-lg mb-1">{formatTimeOfDay(apt.timeOfDay)}</div>
-          <div className="text-sm text-gray-700 mb-1">
+          <div className="text-sm text-muted-foreground mb-1">
             Aangevraagd door <span className="font-medium">{apt.createdByName}</span>
           </div>
           {apt.notes?.trim() ? (
-            <div className="text-sm text-gray-600">{apt.notes}</div>
+            <div className="text-sm text-muted-foreground">{apt.notes}</div>
           ) : (
-            <div className="text-sm text-gray-400">Geen notities</div>
+            <div className="text-sm text-muted-foreground/70">Geen notities</div>
           )}
         </div>
       </div>
@@ -107,27 +107,27 @@ export default function ClientAgenda() {
     };
     showDate?: boolean;
   }) => (
-    <div key={apt.id} className="px-4 py-3 border-b border-gray-100">
+    <div key={apt.id} className="px-4 py-3 border-b border-border">
       <div className="flex items-start gap-3">
         <div className="flex-1">
           {showDate && (
-            <div className="text-xs text-gray-500 mb-1">
+            <div className="text-xs text-muted-foreground mb-1">
               {apt.isoDate === todayStr ? "Vandaag" : formatDateNL(apt.isoDate)}
             </div>
           )}
           <div className="flex items-baseline justify-between gap-3">
-            <div className="font-bold text-lg">{apt.title}</div>
-            <div className="text-sm font-medium text-gray-700">{apt.time}</div>
+            <div className="font-semibold text-lg">{apt.title}</div>
+            <div className="text-sm font-medium text-muted-foreground">{apt.time}</div>
           </div>
           {(apt.staffName || apt.location) ? (
-            <div className="text-sm text-gray-700 mt-1">
+            <div className="text-sm text-muted-foreground mt-1">
               {apt.staffName ? <span className="font-medium">{apt.staffName}</span> : null}
-              {apt.staffName && apt.location ? <span className="text-gray-400"> • </span> : null}
-              {apt.location ? <span className="text-gray-600">{apt.location}</span> : null}
+              {apt.staffName && apt.location ? <span className="text-muted-foreground/70"> • </span> : null}
+              {apt.location ? <span className="text-muted-foreground">{apt.location}</span> : null}
             </div>
           ) : null}
           {apt.isNow ? (
-            <div className="mt-2 inline-flex items-center rounded-full bg-[#F5A623]/10 px-2.5 py-1 text-xs font-medium text-[#F5A623]">
+            <div className="mt-2 inline-flex items-center rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
               Nu bezig
             </div>
           ) : null}
@@ -137,7 +137,7 @@ export default function ClientAgenda() {
   );
 
   return (
-    <div className="min-h-screen bg-white pb-20 w-full mx-auto">
+    <div className="min-h-screen bg-background text-foreground pb-20 w-full mx-auto">
       <TealHeader title="Mijn Agenda" />
 
       {/* Pill Toggle */}
@@ -170,7 +170,7 @@ export default function ClientAgenda() {
           ) : null}
 
           {(plannedToday.length === 0 && plannedLater.length === 0) ? (
-            <div className="text-center text-gray-400 py-12">
+            <div className="text-center text-muted-foreground/70 py-12">
               Geen geplande afspraken
             </div>
           ) : null}
@@ -195,7 +195,7 @@ export default function ClientAgenda() {
               <PlannedAppointmentRow key={apt.id} apt={apt} showDate />
             ))
           ) : (
-            <div className="text-center text-gray-400 py-12">
+            <div className="text-center text-muted-foreground/70 py-12">
               Geen afgelopen afspraken
             </div>
           )}
@@ -220,37 +220,37 @@ export default function ClientAgenda() {
       />
       <AlertDialog open={isRequestSentOpen} onOpenChange={setIsRequestSentOpen}>
         <AlertDialogContent className="border-0 p-0 overflow-hidden">
-          <div className="bg-[#1DC6B4] text-white px-6 py-5">
+          <div className="bg-secondary text-secondary-foreground px-6 py-5">
             <AlertDialogHeader className="text-left">
-              <AlertDialogTitle className="text-white">Afspraakverzoek verstuurd</AlertDialogTitle>
-              <AlertDialogDescription className="text-white/90">
+              <AlertDialogTitle className="text-secondary-foreground">Afspraakverzoek verstuurd</AlertDialogTitle>
+              <AlertDialogDescription className="text-secondary-foreground/90">
                 We hebben je aanvraag ontvangen en nemen dit zo snel mogelijk in behandeling.
               </AlertDialogDescription>
             </AlertDialogHeader>
           </div>
 
           <div className="px-6 py-5">
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-2 text-sm">
+            <div className="rounded-lg border border-border bg-muted p-4 space-y-2 text-sm">
               <div className="flex items-center justify-between gap-3">
-                <span className="text-gray-500">Datum</span>
-                <span className="font-medium text-gray-900">{lastRequest?.date ?? "-"}</span>
+                <span className="text-muted-foreground">Datum</span>
+                <span className="font-medium text-foreground">{lastRequest?.date ?? "-"}</span>
               </div>
               <div className="flex items-center justify-between gap-3">
-                <span className="text-gray-500">Dagdeel</span>
-                <span className="font-medium text-gray-900">
+                <span className="text-muted-foreground">Dagdeel</span>
+                <span className="font-medium text-foreground">
                   {lastRequest ? formatTimeOfDay(lastRequest.timeOfDay) : "-"}
                 </span>
               </div>
-              <div className="pt-2 border-t border-gray-200">
-                <div className="text-gray-500 mb-1">Notities</div>
-                <div className="text-gray-900">
+              <div className="pt-2 border-t border-border">
+                <div className="text-muted-foreground mb-1">Notities</div>
+                <div className="text-foreground">
                   {lastRequest?.notes?.trim() ? lastRequest.notes : "Geen"}
                 </div>
               </div>
             </div>
 
             <AlertDialogFooter className="mt-5">
-              <AlertDialogAction className="w-full bg-[#1DC6B4] hover:bg-[#18B5A3] text-white">
+              <AlertDialogAction className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground">
                 Oké
               </AlertDialogAction>
             </AlertDialogFooter>

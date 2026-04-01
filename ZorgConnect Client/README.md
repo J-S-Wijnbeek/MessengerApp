@@ -1,7 +1,7 @@
 
-  # ZorgConnect Client
+  # YoungConnect Client
 
-  This is a code bundle for ZorgConnect Client. The original project is available at https://www.figma.com/design/CjpeveznNotrHuH4xvFqmI/ZorgConnect-Client.
+  This is a code bundle for YoungConnect Client. The original project is available at https://www.figma.com/design/CjpeveznNotrHuH4xvFqmI/ZorgConnect-Client.
 
   ## Running the code
 

@@ -7,11 +7,11 @@ interface ToggleRowProps {
 
 export function ToggleRow({ label, description, value, onChange }: ToggleRowProps) {
   return (
-    <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+    <div className="px-4 py-3 border-b border-border flex items-center justify-between">
       <div className="flex flex-col w-3/4">
-        <span className="zc-toggle-label text-gray-900">{label}</span>
+        <span className="zc-toggle-label text-foreground">{label}</span>
         {description && (
-          <span className="zc-toggle-description text-sm text-gray-500">
+          <span className="zc-toggle-description text-sm text-muted-foreground">
             {description}
           </span>
         )}
@@ -22,7 +22,7 @@ export function ToggleRow({ label, description, value, onChange }: ToggleRowProp
         aria-pressed={value}
         onClick={() => onChange(!value)}
         className={`w-12 h-7 rounded-full transition-colors ${
-          value ? "bg-[#F5A623]" : "bg-gray-300"
+          value ? "bg-primary" : "bg-muted"
         }`}
       >
         <div

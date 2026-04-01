@@ -27,22 +27,22 @@ const getStatusColors = (status: StaffStatus) => {
     case "beschikbaar":
       return {
         dot: "bg-green-500",
-        text: "text-green-700",
+        text: "text-green-700 dark:text-green-200",
       };
     case "achterwacht":
       return {
         dot: "bg-orange-500",
-        text: "text-orange-700",
+        text: "text-orange-700 dark:text-orange-200",
       };
     case "niet-beschikbaar":
       return {
         dot: "bg-gray-400",
-        text: "text-gray-500",
+        text: "text-gray-500 dark:text-gray-300",
       };
     default:
       return {
         dot: "bg-gray-300",
-        text: "text-gray-700",
+        text: "text-gray-700 dark:text-gray-200",
       };
   }
 };
@@ -69,18 +69,18 @@ const getSlotCardColors = (category: SlotCategory) => {
   switch (category) {
     case "green":
       return {
-        card: "bg-green-50 border-green-200",
-        badge: "text-green-700",
+        card: "bg-green-50 border-green-200 dark:bg-green-950/30 dark:border-green-800",
+        badge: "text-green-700 dark:text-green-200",
       };
     case "orange":
       return {
-        card: "bg-orange-50 border-orange-200",
-        badge: "text-orange-700",
+        card: "bg-orange-50 border-orange-200 dark:bg-orange-950/25 dark:border-orange-800",
+        badge: "text-orange-700 dark:text-orange-200",
       };
     default:
       return {
-        card: "bg-gray-50 border-gray-200",
-        badge: "text-gray-500",
+        card: "bg-muted border-border",
+        badge: "text-muted-foreground",
       };
   }
 };
@@ -223,22 +223,22 @@ export function AppointmentRequestSheet({
       />
 
       {/* Bottom Sheet / Desktop Side Panel */}
-      <div className="fixed inset-x-0 bottom-0 bg-white rounded-t-2xl self-center !h-fit z-50 w-full max-w-md mx-auto animate-slide-up max-h-[90vh] overflow-y-auto md:inset-y-0 md:right-0 md:left-auto md:top-0 md:h-full md:max-w-lg md:rounded-none md:rounded-l-2xl">
+      <div className="fixed inset-x-0 bottom-0 bg-background text-foreground rounded-t-2xl self-center !h-fit z-50 w-full max-w-md mx-auto animate-slide-up max-h-[90vh] overflow-y-auto md:inset-y-0 md:right-0 md:left-auto md:top-0 md:h-full md:max-w-lg md:rounded-none md:rounded-l-2xl">
         <div className="p-4">
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">Afspraak aanvragen</h2>
+            <h2 className="text-xl font-bold text-foreground">Afspraak aanvragen</h2>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="p-2 hover:bg-muted rounded-full transition-colors"
             >
-              <X size={24} className="text-gray-600" />
+              <X size={24} className="text-muted-foreground" />
             </button>
           </div>
 
           {/* Time of Day Selection - First */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-muted-foreground mb-2">
               Dagdeel voorkeur
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -249,8 +249,8 @@ export function AppointmentRequestSheet({
                 }}
                 className={`py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
                   timeOfDay === "ochtend"
-                    ? "bg-[#F5A623] text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-foreground hover:bg-muted/80"
                 }`}
               >
                 Ochtend
@@ -262,8 +262,8 @@ export function AppointmentRequestSheet({
                 }}
                 className={`py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
                   timeOfDay === "middag"
-                    ? "bg-[#F5A623] text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-foreground hover:bg-muted/80"
                 }`}
               >
                 Middag
@@ -275,8 +275,8 @@ export function AppointmentRequestSheet({
                 }}
                 className={`py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
                   timeOfDay === "avond"
-                    ? "bg-[#F5A623] text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-foreground hover:bg-muted/80"
                 }`}
               >
                 Avond
@@ -288,8 +288,8 @@ export function AppointmentRequestSheet({
                 }}
                 className={`py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
                   timeOfDay === "geen-voorkeur"
-                    ? "bg-[#F5A623] text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-foreground hover:bg-muted/80"
                 }`}
               >
                 Geen voorkeur
@@ -299,16 +299,16 @@ export function AppointmentRequestSheet({
 
           {/* Calendar */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-muted-foreground mb-2">
               Kies een datum
             </label>
             
             {/* Calendar Header */}
-            <div className="border border-gray-300 rounded-lg overflow-hidden">
-              <div className="bg-[#F5A623] text-white p-3 flex items-center justify-between">
+            <div className="border border-border rounded-lg overflow-hidden">
+              <div className="bg-primary text-primary-foreground p-3 flex items-center justify-between">
                 <button
                   onClick={goToPreviousMonth}
-                  className="p-1 hover:bg-[#E69510] rounded transition-colors"
+                  className="p-1 hover:bg-primary/90 rounded transition-colors"
                 >
                   <ChevronLeft size={20} />
                 </button>
@@ -317,16 +317,16 @@ export function AppointmentRequestSheet({
                 </div>
                 <button
                   onClick={goToNextMonth}
-                  className="p-1 hover:bg-[#E69510] rounded transition-colors"
+                  className="p-1 hover:bg-primary/90 rounded transition-colors"
                 >
                   <ChevronRight size={20} />
                 </button>
               </div>
 
               {/* Day names */}
-              <div className="grid grid-cols-7 bg-gray-50 border-b border-gray-200">
+              <div className="grid grid-cols-7 bg-muted border-b border-border">
                 {["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"].map((day) => (
-                  <div key={day} className="text-center text-xs font-medium text-gray-600 py-2">
+                  <div key={day} className="text-center text-xs font-medium text-muted-foreground py-2">
                     {day}
                   </div>
                 ))}
@@ -341,38 +341,38 @@ export function AppointmentRequestSheet({
 
                   const isSelected = day.dateStr === date;
                   
-                  let bgColor = "bg-white";
-                  let textColor = "text-gray-900";
-                  let hoverClass = "hover:bg-gray-50";
+                  let bgColor = "bg-background";
+                  let textColor = "text-foreground";
+                  let hoverClass = "hover:bg-muted";
                   let cursor = "cursor-pointer";
                   
                   if (day.isDisabled) {
-                    bgColor = "bg-gray-100";
-                    textColor = "text-gray-300";
+                    bgColor = "bg-muted";
+                    textColor = "text-muted-foreground/50";
                     cursor = "cursor-not-allowed";
                     hoverClass = "";
                   } else if (day.availability === "high") {
-                    bgColor = "bg-green-100";
-                    textColor = "text-green-900";
-                    hoverClass = "hover:bg-green-200";
+                    bgColor = "bg-green-100 dark:bg-green-950/25";
+                    textColor = "text-green-700 dark:text-green-200";
+                    hoverClass = "hover:bg-green-200 dark:hover:bg-green-950/35";
                   } else if (day.availability === "limited") {
-                    bgColor = "bg-orange-100";
-                    textColor = "text-orange-900";
-                    hoverClass = "hover:bg-orange-200";
+                    bgColor = "bg-orange-100 dark:bg-orange-950/22";
+                    textColor = "text-orange-700 dark:text-orange-200";
+                    hoverClass = "hover:bg-orange-200 dark:hover:bg-orange-950/30";
                   } else if (day.availability === "unknown") {
-                    bgColor = "bg-orange-50";
-                    textColor = "text-orange-900";
-                    hoverClass = "hover:bg-orange-100";
+                    bgColor = "bg-amber-100 dark:bg-amber-950/18";
+                    textColor = "text-amber-800 dark:text-amber-200";
+                    hoverClass = "hover:bg-amber-200 dark:hover:bg-amber-950/28";
                   } else if (day.availability === "none") {
-                    bgColor = "bg-gray-100";
-                    textColor = "text-gray-400";
+                    bgColor = "bg-muted";
+                    textColor = "text-muted-foreground/70";
                     cursor = "cursor-not-allowed";
                     hoverClass = "";
                   }
 
                   if (isSelected) {
-                    bgColor = "bg-[#F5A623]";
-                    textColor = "text-white";
+                    bgColor = "bg-primary";
+                    textColor = "text-primary-foreground";
                   }
 
                   return (
@@ -384,8 +384,8 @@ export function AppointmentRequestSheet({
                         }
                       }}
                       disabled={day.isDisabled || day.availability === "none"}
-                      className={`aspect-square border-b border-r border-gray-200 flex items-center justify-center text-sm font-medium transition-colors ${bgColor} ${textColor} ${hoverClass} ${cursor} ${
-                        isSelected ? "ring-2 ring-[#F5A623] ring-inset" : ""
+                      className={`aspect-square border-b border-r border-border flex items-center justify-center text-sm font-medium transition-colors ${bgColor} ${textColor} ${hoverClass} ${cursor} ${
+                        isSelected ? "ring-2 ring-primary ring-inset" : ""
                       }`}
                     >
                       {day.date}
@@ -396,24 +396,24 @@ export function AppointmentRequestSheet({
             </div>
 
             {/* Legend */}
-            <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-              <div className="text-xs font-medium text-gray-700 mb-2">Legenda:</div>
+            <div className="mt-3 p-3 bg-muted rounded-lg">
+              <div className="text-xs font-medium text-foreground mb-2">Legenda:</div>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="flex items-center gap-1.5">
-                  <div className="w-4 h-4 bg-green-100 border border-green-300 rounded" />
-                  <span className="text-gray-600">Goed beschikbaar</span>
+                  <div className="w-4 h-4 bg-green-100 border border-green-300 dark:bg-green-950/35 dark:border-green-800 rounded" />
+                  <span className="text-green-700 dark:text-green-200">Goed beschikbaar</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-4 h-4 bg-orange-100 border border-orange-300 rounded" />
-                  <span className="text-gray-600">Beperkt</span>
+                  <div className="w-4 h-4 bg-orange-100 border border-orange-300 dark:bg-orange-950/30 dark:border-orange-800 rounded" />
+                  <span className="text-orange-700 dark:text-orange-200">Beperkt</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-4 h-4 bg-orange-50 border border-orange-200 rounded" />
-                  <span className="text-gray-600">Rooster onbekend</span>
+                  <div className="w-4 h-4 bg-amber-100 border border-amber-300 dark:bg-amber-950/18 dark:border-amber-800 rounded" />
+                  <span className="text-amber-800 dark:text-amber-200">Rooster onbekend</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-4 h-4 bg-gray-100 border border-gray-300 rounded" />
-                  <span className="text-gray-600">Niet beschikbaar / te vroeg</span>
+                  <div className="w-4 h-4 bg-muted border border-border rounded" />
+                  <span className="text-muted-foreground">Niet beschikbaar / te vroeg</span>
                 </div>
               </div>
             </div>
@@ -422,9 +422,9 @@ export function AppointmentRequestSheet({
           {/* Availability Display for Selected Date */}
           {date && !selectedDateAvailability && (
             <div className="mb-4">
-              <div className="p-3 rounded-lg border border-orange-200 bg-orange-50">
-                <div className="text-sm font-medium text-orange-900">Rooster onbekend</div>
-                <div className="text-xs text-orange-800 mt-1">
+              <div className="p-3 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/18">
+                <div className="text-sm font-medium text-amber-900 dark:text-amber-100">Rooster onbekend</div>
+                <div className="text-xs text-amber-800 dark:text-amber-200 mt-1">
                   Je kunt deze datum wel aanvragen. We bevestigen de afspraak zodra het rooster bekend is.
                 </div>
               </div>
@@ -433,7 +433,7 @@ export function AppointmentRequestSheet({
 
           {selectedDateAvailability && date && (
             <div className="mb-4">
-              <div className="text-sm font-medium text-gray-900 mb-3">Beschikbaarheid op deze datum:</div>
+              <div className="text-sm font-medium text-gray-900 dark:text-white mb-3">Beschikbaarheid op deze datum:</div>
               <div className="space-y-3">
                 {/* Ochtend */}
                 {(() => {
@@ -445,8 +445,8 @@ export function AppointmentRequestSheet({
                       className={`p-3 rounded-lg border ${colors.card}`}
                     >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm text-gray-700 font-medium">Ochtend (08:00-12:00)</span>
-                    <span className={`text-xs font-medium ${slot.available > 0 ? colors.badge : "text-gray-400"}`}>
+                    <span className="text-sm text-muted-foreground font-medium">Ochtend (08:00-12:00)</span>
+                    <span className={`text-xs font-medium ${slot.available > 0 ? colors.badge : "text-muted-foreground/70"}`}>
                       {slot.available > 0
                         ? `${slot.available} beschikbaar`
                         : "Niet beschikbaar"}
@@ -483,8 +483,8 @@ export function AppointmentRequestSheet({
                       className={`p-3 rounded-lg border ${colors.card}`}
                     >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm text-gray-700 font-medium">Middag (12:00-18:00)</span>
-                    <span className={`text-xs font-medium ${slot.available > 0 ? colors.badge : "text-gray-400"}`}>
+                    <span className="text-sm text-muted-foreground font-medium">Middag (12:00-18:00)</span>
+                    <span className={`text-xs font-medium ${slot.available > 0 ? colors.badge : "text-muted-foreground/70"}`}>
                       {slot.available > 0
                         ? `${slot.available} beschikbaar`
                         : "Niet beschikbaar"}
@@ -521,8 +521,8 @@ export function AppointmentRequestSheet({
                       className={`p-3 rounded-lg border ${colors.card}`}
                     >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm text-gray-700 font-medium">Avond (18:00-22:00)</span>
-                    <span className={`text-xs font-medium ${slot.available > 0 ? colors.badge : "text-gray-400"}`}>
+                    <span className="text-sm text-muted-foreground font-medium">Avond (18:00-22:00)</span>
+                    <span className={`text-xs font-medium ${slot.available > 0 ? colors.badge : "text-muted-foreground/70"}`}>
                       {slot.available > 0
                         ? `${slot.available} beschikbaar`
                         : "Niet beschikbaar"}
@@ -554,7 +554,7 @@ export function AppointmentRequestSheet({
 
           {/* Notes Input */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-muted-foreground mb-2">
               Notities (optioneel)
             </label>
             <textarea
@@ -562,7 +562,7 @@ export function AppointmentRequestSheet({
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Voeg een notitie toe..."
               rows={3}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1DC6B4] resize-none"
+              className="w-full px-4 py-2 border border-border bg-background rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary resize-none"
             />
           </div>
 
@@ -570,14 +570,14 @@ export function AppointmentRequestSheet({
           <div className="flex gap-3">
             <button
               onClick={onClose}
-              className="flex-1 py-3 px-4 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+              className="flex-1 py-3 px-4 bg-muted text-foreground rounded-lg font-medium hover:bg-muted/80 dark:bg-muted/60 dark:hover:bg-muted/70 transition-colors"
             >
               Annuleren
             </button>
             <button
               onClick={handleSubmit}
               disabled={!date || getDateAvailability(date) === "none"}
-              className="flex-1 py-3 px-4 bg-[#F5A623] text-white rounded-lg font-medium hover:bg-[#E69510] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+              className="flex-1 py-3 px-4 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:bg-muted disabled:cursor-not-allowed disabled:text-muted-foreground"
             >
               Versturen
             </button>
