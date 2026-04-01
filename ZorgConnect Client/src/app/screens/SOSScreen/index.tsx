@@ -14,6 +14,8 @@ export default function SOSScreen() {
     cancelVerification,
     closeEmergency,
     cancelSOS,
+    location,
+    adres,
   } = useSOSScreen();
 
   if (isEmergencySent) {
@@ -44,11 +46,27 @@ export default function SOSScreen() {
                 <div className="text-sm text-muted-foreground">Begeleider</div>
               </div>
             </div>
-            <div className="bg-muted rounded-lg p-4 mb-2">
-              <div className="text-center text-muted-foreground mb-2">📍 Locatie tracking actief</div>
-              <div className="h-32 bg-background/50 rounded flex items-center justify-center">
-                <span className="text-muted-foreground">🗺️ Kaart</span>
+            <div className="bg-gray-100 rounded-lg p-4 mb-2">
+              <div className="text-center text-gray-600 mb-2">📍 Locatie tracking actief</div>
+              <div className="h-32 bg-gray-200 rounded flex items-center justify-center">
+                {location ? (
+                  <iframe
+                    title="Google Maps locatie"
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0, borderRadius: '8px' }}
+                    loading="lazy"
+                    allowFullScreen
+                    referrerPolicy="no-referrer-when-downgrade"
+                    src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyAhzleMjsGnAvFIlXDDXJ6Hf4OrZFrs0xc&q=${location.lat},${location.lng}&zoom=16&maptype=roadmap`}
+                  />
+                ) : (
+                  <span className="text-gray-500">Locatie niet beschikbaar</span>
+                )}
               </div>
+              {adres && (
+                <div className="text-xs text-gray-700 mt-2 text-center">{adres}</div>
+              )}
             </div>
             <div className="text-center font-bold text-secondary text-lg">
               ~8 min onderweg

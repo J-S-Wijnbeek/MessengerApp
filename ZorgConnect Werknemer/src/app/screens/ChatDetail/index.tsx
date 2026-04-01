@@ -8,10 +8,9 @@ export default function ChatDetail() {
   const socketRef = useRef<any>(null);
   const [message, setMessage] = useState("");
   const [socketConnected, setSocketConnected] = useState(false);
-  const [messages, setMessages] = useState(
-    () => mockChatMessages[Number(clientId) || 0] || []
-  );
+  const [messages, setMessages] = useState<any[]>([]);
   const [triggerWarning, setTriggerWarning] = useState<string | null>(null);
+  const [urgentAlert, setUrgentAlert] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const client = mockLinkedClientsDetailed.find(
@@ -29,8 +28,9 @@ export default function ChatDetail() {
   useEffect(() => {
     if (!clientId) return;
 
-    const socket = io("http://localhost:3001");
-    socketRef.current = socket;
+    clearPendingUrgentAlert(clientId);
+
+    let socket: any = null;
 
     const handleHistory = ({ chatId, history }: any) => {
       if (chatId !== clientId) return;
@@ -49,10 +49,10 @@ export default function ChatDetail() {
       setSocketConnected(true);
       socket.emit("join_chat", clientId);
       socket.emit("read_chat", { chatId: clientId, readerType: "staff" });
+      socket.emit("join_staff");
     };
 
-    const handleDisconnect = (reason: any) => {
-      console.log("Socket disconnected", reason);
+    const handleDisconnect = () => {
       setSocketConnected(false);
     };
 
@@ -68,20 +68,42 @@ export default function ChatDetail() {
       setTimeout(() => setTriggerWarning(null), 10000);
     };
 
-    socket.on("connect", handleConnect);
-    socket.on("disconnect", handleDisconnect);
-    socket.on("connect_error", handleError);
-    socket.on("chat_history", handleHistory);
-    socket.on("chat_message", handleIncoming);
-    socket.on("trigger_warning", handleTriggerWarning);
+    const handleUrgentAlert = ({ chatId, matches, message }: any) => {
+      const alertText = `Noodoproep voor chat ${chatId}: ${matches.join(", ")} – ${message}`;
+      console.error(alertText);
+      setUrgentAlert(alertText);
+      setTimeout(() => setUrgentAlert(null), 10000);
+    };
+
+    const connectSocket = () => {
+      socket = io(SOCKET_URL, {
+        autoConnect: false,
+        reconnection: false,
+        timeout: 5000,
+        transports: ["websocket", "polling"],
+      });
+      socketRef.current = socket;
+      socket.open();
+
+      socket.on("connect", handleConnect);
+      socket.on("disconnect", handleDisconnect);
+      socket.on("connect_error", handleError);
+      socket.on("chat_history", handleHistory);
+      socket.on("chat_message", handleIncoming);
+      socket.on("trigger_warning", handleTriggerWarning);
+      socket.on("urgent_alert", handleUrgentAlert);
+    };
+
+    connectSocket();
 
     return () => {
-        socket.off("connect", handleConnect);
+      socket.off("connect", handleConnect);
       socket.off("disconnect", handleDisconnect);
       socket.off("connect_error", handleError);
       socket.off("chat_history", handleHistory);
       socket.off("chat_message", handleIncoming);
       socket.off("trigger_warning", handleTriggerWarning);
+      socket.off("urgent_alert", handleUrgentAlert);
       socket.disconnect();
     };
   }, [clientId]);
@@ -120,6 +142,11 @@ export default function ChatDetail() {
       <div className="px-4 py-2 text-xs text-gray-100">
         Socket status: {socketConnected ? "connected" : "disconnected"}
       </div>
+      {urgentAlert && (
+        <div className="bg-red-100 border border-red-300 text-red-900 px-4 py-3">
+          {urgentAlert}
+        </div>
+      )}
       {triggerWarning && (
         <div className="bg-red-100 border border-red-300 text-red-900 px-4 py-3">
           {triggerWarning}
