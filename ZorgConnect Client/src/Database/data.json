@@ -1,4 +1,7 @@
 {
+  "settings": {
+    "locatieDelen": true
+  },
   "appointmentRequests": [
     {
       "date": "2026-04-03",
@@ -48,5 +51,5 @@
       "id": "WcTwbzS0p9Q"
     }
   ],
-  "$schema": "./node_modules/json-server/schema.json"
+  "$schema": "../node_modules/json-server/schema.json"
 }

@@ -3,12 +3,22 @@ const http = require("http");
 const { Server } = require("socket.io");
 const cors = require('cors');
 
+const PORT = process.env.PORT || 3001;
 const app = express();
 app.use(cors());
 
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: { origin: "*" }
+});
+
+server.on('error', (error) => {
+    if (error.code === 'EADDRINUSE') {
+        console.error(`Port ${PORT} is already in use. Please stop the process using it or set PORT to another value.`);
+        process.exit(1);
+    }
+    console.error('Server error:', error);
+    process.exit(1);
 });
 
 const triggerWordsConfig = require("./triggerWords.json");
@@ -26,6 +36,11 @@ io.on("connection", (socket) => {
         socket.join(chatId);
         const history = chatHistory[chatId] || [];
         socket.emit("chat_history", { chatId, history });
+    });
+
+    socket.on("join_staff", () => {
+        console.log("join_staff", "socket", socket.id);
+        socket.join("staff");
     });
 
     socket.on("chat_message", (msg) => {
@@ -56,9 +71,27 @@ io.on("connection", (socket) => {
             console.log("Emitting trigger warning to sender and room", chatId);
             socket.emit("trigger_warning", warning);
             io.to(chatId).emit("trigger_warning", warning);
+
+            if (normalizedMsg.senderType !== "staff") {
+                console.log("Emitting urgent alert to staff for chat", chatId);
+                io.to("staff").emit("urgent_alert", {
+                    chatId,
+                    matches,
+                    message: normalizedMsg.message,
+                });
+            }
         }
 
         io.to(chatId).emit("chat_message", normalizedMsg);
+
+        if (normalizedMsg.senderType === "client") {
+            io.to("staff").emit("new_message", {
+                chatId,
+                preview: String(normalizedMsg.message || "").slice(0, 80),
+                message: normalizedMsg.message,
+                timestamp: normalizedMsg.timestamp,
+            });
+        }
     });
 
     socket.on("read_chat", ({ chatId, readerType }) => {
@@ -75,6 +108,6 @@ io.on("connection", (socket) => {
     });
 });
 
-server.listen(3001, () => {
-    console.log("Server is running on port 3001");
+server.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });

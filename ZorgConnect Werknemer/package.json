@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "dev": "npx concurrently --kill-others \"npm --prefix ../server run start\" \"vite\""
+    "dev": "npx concurrently \"npm --prefix ../server run start\" \"vite\""
   },
   "dependencies": {
     "@emotion/react": "11.14.0",
@@ -68,7 +68,6 @@
   "devDependencies": {
     "@tailwindcss/vite": "4.1.12",
     "@vitejs/plugin-react": "4.7.0",
-    "concurrently": "^8.2.0",
     "tailwindcss": "4.1.12",
     "vite": "^6.4.1"
   },

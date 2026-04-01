@@ -41,10 +41,7 @@ export default function Berichten() {
   }, [selectedChat]);
 
   useEffect(() => {
-    const socket = io("http://localhost:3001", {
-      reconnectionAttempts: 3,
-      timeout: 5000,
-    });
+    const socket = io("http://localhost:3001");
     socketRef.current = socket;
 
     const handleHistory = ({ chatId, history }: any) => {
@@ -127,8 +124,7 @@ export default function Berichten() {
     const lower = msg.message.toLowerCase();
     const localMatches = localTriggerWords.filter((word) => lower.includes(word));
     if (localMatches.length > 0) {
-      const warningText = `Local trigger word detected: ${localMatches.join(", ")} in message "${msg.message}"`;
-      console.error(warningText);
+      const warningText = `Trigger word gedetecteerd: ${localMatches.join(", ")} in bericht "${msg.message}"`;
       setTriggerWarning(warningText);
       setTimeout(() => setTriggerWarning(null), 10000);
     }
