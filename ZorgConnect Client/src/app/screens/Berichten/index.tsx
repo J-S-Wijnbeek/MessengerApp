@@ -1,32 +1,182 @@
-import * as React from "react";
+import { useState, useEffect, useRef } from "react";
+import { io } from "socket.io-client";
 import { TealHeader } from "../../components/TealHeader";
 import { ClientBottomNav } from "../../components/ClientBottomNav";
-import { mockCoupledCareWorkers } from "../../data/mockData";
-import { Send, ArrowLeft, X, Plus, Search, AlertCircle } from "lucide-react";
-import { useBerichten } from "./hooks/useBerichten";
+import { FAB } from "../../components/FAB";
+import { mockClients, mockCoupledCareWorkers } from "../../data/mockData";
+import { Send, ArrowLeft, X, Plus, Search, AlertCircle, Check } from "lucide-react";
+import { useLocation } from "react-router";
+
+const initialMockMessages = [
+  { id: 1, message: "Hallo, hoe gaat het met je?", senderType: "staff", timestamp: "14:20", chatId: "1", read: true },
+  { id: 2, message: "Het gaat goed, dank je!", senderType: "client", timestamp: "14:25", chatId: "1", read: false },
+  { id: 3, message: "Fijn om te horen. Heb je nog vragen?", senderType: "staff", timestamp: "14:28", chatId: "1", read: true },
+  { id: 4, message: "Dank je wel voor het gesprek vandaag", senderType: "client", timestamp: "14:30", chatId: "1", read: false },
+];
 
 export default function Berichten() {
-  const {
-    selectedChat,
-    message,
-    setMessage,
-    showNewChatSheet,
-    searchQuery,
-    setSearchQuery,
-    showUnavailableAlert,
-    setShowUnavailableAlert,
-    mockMessages,
-    filteredCareWorkers,
-    availableStaff,
-    selectedStaffMember,
-    isStaffUnavailable,
-    statusText,
-    openChat,
-    closeChat,
-    openNewChatSheet,
-    closeNewChatSheet,
-    startChat,
-  } = useBerichten();
+  const location = useLocation();
+  const initialChatId = location.state?.chatId || null;
+  const socketRef = useRef<any>(null);
+  const selectedChatRef = useRef<number | null>(initialChatId);
+
+  const [selectedChat, setSelectedChat] = useState<number | null>(initialChatId);
+  const currentChatId = selectedChat ? selectedChat.toString() : "";
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState(initialMockMessages);
+  const [showNewChatSheet, setShowNewChatSheet] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showUnavailableAlert, setShowUnavailableAlert] = useState(true); // Demo: show on first load
+  const [triggerWarning, setTriggerWarning] = useState<string | null>(null);
+  const [socketConnected, setSocketConnected] = useState(false);
+  const localTriggerWords = ["help", "emergency", "urgent", "suicide", "panic", "abuse", "danger", "angst", "stress"];
+
+
+  const filteredCareWorkers = mockCoupledCareWorkers.filter((worker) =>
+    worker.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  useEffect(() => {
+    selectedChatRef.current = selectedChat;
+  }, [selectedChat]);
+
+  useEffect(() => {
+    const socket = io("http://localhost:3001");
+    socketRef.current = socket;
+
+    const handleHistory = ({ chatId, history }: any) => {
+      if (chatId !== currentChatId) return;
+      setMessages(history);
+    };
+
+    const handleIncoming = (msg: any) => {
+      if (msg.chatId !== currentChatId) return;
+      setMessages((prev) =>
+        prev.some((existing) => existing.id === msg.id) ? prev : [...prev, msg]
+      );
+    };
+
+    const handleTriggerWarning = ({ chatId, matches, message }: any) => {
+      if (chatId !== currentChatId) return;
+      const warningText = `Trigger warning for chat ${chatId}: ${matches.join(", ")} - ${message}`;
+      console.error(warningText);
+      setTriggerWarning(warningText);
+      setTimeout(() => setTriggerWarning(null), 10000);
+    };
+
+    const handleConnect = () => {
+      console.log("Socket connected", socket.id);
+      setSocketConnected(true);
+      socket.emit("join_chat", currentChatId);
+      socket.emit("read_chat", { chatId: currentChatId, readerType: "client" });
+    };
+
+    const handleDisconnect = (reason: any) => {
+      console.log("Socket disconnected", reason);
+      setSocketConnected(false);
+    };
+
+    const handleError = (error: any) => {
+      console.error("Socket.IO error:", error);
+    };
+
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+    socket.on("connect_error", handleError);
+    socket.on("chat_history", handleHistory);
+    socket.on("chat_message", handleIncoming);
+    socket.on("trigger_warning", handleTriggerWarning);
+
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+      socket.off("connect_error", handleError);
+      socket.off("chat_history", handleHistory);
+      socket.off("chat_message", handleIncoming);
+      socket.off("trigger_warning", handleTriggerWarning);
+      socket.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!currentChatId) return;
+    socketRef.current?.emit("join_chat", currentChatId);
+    socketRef.current?.emit("read_chat", { chatId: currentChatId, readerType: "client" });
+  }, [currentChatId]);
+
+  const activeMessages = messages.filter((msg) => msg.chatId === currentChatId);
+
+  const handleSend = () => {
+    if (!message.trim() || selectedChat === null) return;
+
+    const msg = {
+      id: Date.now(),
+      chatId: currentChatId,
+      senderType: "client" as const,
+      message: message.trim(),
+      timestamp: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      read: false,
+    };
+
+    const lower = msg.message.toLowerCase();
+    const localMatches = localTriggerWords.filter((word) => lower.includes(word));
+    if (localMatches.length > 0) {
+      const warningText = `Local trigger word detected: ${localMatches.join(", ")} in message "${msg.message}"`;
+      console.error(warningText);
+      setTriggerWarning(warningText);
+      setTimeout(() => setTriggerWarning(null), 10000);
+    }
+
+    setMessages((prev) => [...prev, msg]);
+    socketRef.current?.emit("chat_message", msg);
+    setMessage("");
+  };
+
+  // Get available staff members (both coupled and others)
+  const availableStaff = mockCoupledCareWorkers.filter(
+    (worker) => worker.status === "beschikbaar"
+  );
+
+  const selectedStaffMember = selectedChat
+    ? mockCoupledCareWorkers.find((worker) => worker.id === selectedChat) ?? null
+    : null;
+  const isStaffUnavailable = selectedStaffMember
+    ? selectedStaffMember.status !== "beschikbaar"
+    : false;
+  const statusText = selectedStaffMember?.status === "achterwacht"
+    ? "Deze medewerker reageert mogelijk later."
+    : "Je bericht wordt later gelezen.";
+
+  const openChat = (workerId: number) => {
+    setSelectedChat(workerId);
+    setShowUnavailableAlert(true);
+  };
+
+  const closeChat = () => {
+    setSelectedChat(null);
+  };
+
+  const openNewChatSheet = () => setShowNewChatSheet(true);
+  const closeNewChatSheet = () => setShowNewChatSheet(false);
+  const startChat = (workerId: number) => {
+    setSelectedChat(workerId);
+    setShowNewChatSheet(false);
+    setShowUnavailableAlert(true);
+  };
+
+  const getChatPreview = (workerId: number) => {
+    const chatId = workerId.toString();
+    const chatMessages = messages.filter((msg) => msg.chatId === chatId);
+    const lastMessage = chatMessages[chatMessages.length - 1];
+
+    return {
+      text: lastMessage?.message || "",
+      time: lastMessage?.timestamp || "",
+    };
+  };
 
   if (selectedChat) {
     const chatSuggestions = [
@@ -93,27 +243,42 @@ export default function Berichten() {
           </div>
         )}
 
+        {/* Connection status */}
+        <div className="px-4 py-3 text-xs text-gray-500">
+          Socket status: {socketConnected ? "connected" : "disconnected"}
+        </div>
+        {/* Trigger Warning */}
+        {triggerWarning && (
+          <div className="bg-red-100 border border-red-300 text-red-900 rounded-xl px-4 py-3 mb-3">
+            {triggerWarning}
+          </div>
+        )}
+
         {/* Chat Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
-          {mockMessages.map((msg) => (
+          {activeMessages.map((msg) => (
             <div
               key={msg.id}
-              className={`flex ${msg.sender === "client" ? "justify-end" : "justify-start"}`}
+              className={`flex ${msg.senderType === "client" ? "justify-end" : "justify-start"}`}
             >
               <div
                 className={`max-w-[75%] rounded-2xl px-4 py-2 ${
-                  msg.sender === "client"
+                  msg.senderType === "client"
                     ? "bg-[#F5A623] text-white"
                     : "bg-gray-200 text-gray-900"
                 }`}
               >
-                <div>{msg.text}</div>
-                <div
-                  className={`text-xs mt-1 ${
-                    msg.sender === "client" ? "text-white/80" : "text-gray-500"
-                  }`}
-                >
-                  {msg.time}
+                <div>{msg.message}</div>
+                <div className="flex items-center gap-2 mt-1 text-xs">
+                  <span className={msg.senderType === "client" ? "text-white/80" : "text-gray-500"}>
+                    {msg.timestamp}
+                  </span>
+                  {msg.senderType === "client" && (
+                    <span className="flex items-center gap-1 text-white/60">
+                      <Check size={12} />
+                      {msg.read ? "Gelezen" : "Verstuurd"}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -149,7 +314,11 @@ export default function Berichten() {
               placeholder="Typ een bericht..."
               className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#F5A623]"
             />
-            <button className="w-10 h-10 bg-[#1DC6B4] text-white rounded-full flex items-center justify-center hover:bg-[#18B5A3] transition-colors">
+            <button
+            onClick={handleSend}
+            disabled={!message.trim()}
+            className="w-10 h-10 bg-[#1DC6B4] text-white rounded-full flex items-center justify-center hover:bg-[#18B5A3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
               <Send size={20} />
             </button>
           </div>
@@ -169,6 +338,7 @@ export default function Berichten() {
         {mockCoupledCareWorkers.map((worker, index) => {
           const statusColors = ["bg-green-500", "bg-green-500", "bg-[#F5A623]"];
           const statusColor = statusColors[index] || "bg-gray-400";
+          const preview = getChatPreview(worker.id);
 
           return (
             <div
@@ -187,11 +357,11 @@ export default function Berichten() {
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-[#1DC6B4]">{worker.name}</div>
                 <div className="text-sm text-gray-500 truncate">
-                  {index === 0 ? "Hallo, hoe gaat het?" : index === 1 ? "Bedankt voor het gesprek!" : "Tot morgen!"}
+                  {preview.text || "Nog geen berichten"}
                 </div>
               </div>
               <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                <div className="text-xs text-gray-500">{index === 0 ? "14:30" : index === 1 ? "Gisteren" : "Maandag"}</div>
+                <div className="text-xs text-gray-500">{preview.time || ""}</div>
                 {index === 0 && (
                   <div className="w-5 h-5 bg-[#1DC6B4] text-white text-xs rounded-full flex items-center justify-center">
                     2

@@ -1,17 +1,90 @@
-import { ArrowLeft, Send, Info } from "lucide-react";
+import { ArrowLeft, Send, Info, Check } from "lucide-react";
+import { io } from "socket.io-client";
 import { useChatDetail } from "./hooks/useChatDetail";
 
 export default function ChatDetail() {
-  const {
-    client,
-    messages,
-    message,
-    setMessage,
-    messagesEndRef,
-    handleSend,
-    goBack,
-    goToClientProfile,
-  } = useChatDetail();
+  const { clientId } = useParams();
+  const navigate = useNavigate();
+  const socketRef = useRef<any>(null);
+  const [message, setMessage] = useState("");
+  const [socketConnected, setSocketConnected] = useState(false);
+  const [messages, setMessages] = useState(
+    () => mockChatMessages[Number(clientId) || 0] || []
+  );
+  const [triggerWarning, setTriggerWarning] = useState<string | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const client = mockLinkedClientsDetailed.find(
+    (c) => c.id === Number(clientId)
+  );
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  useEffect(() => {
+    if (!clientId) return;
+
+    const socket = io("http://localhost:3001");
+    socketRef.current = socket;
+
+    const handleHistory = ({ chatId, history }: any) => {
+      if (chatId !== clientId) return;
+      setMessages((prev) => (history.length > 0 ? history : prev));
+    };
+
+    const handleIncoming = (msg: any) => {
+      if (msg.chatId !== clientId) return;
+      setMessages((prev) =>
+        prev.some((existing) => existing.id === msg.id) ? prev : [...prev, msg]
+      );
+    };
+
+    const handleConnect = () => {
+      console.log("Socket connected", socket.id, "for chat", clientId);
+      setSocketConnected(true);
+      socket.emit("join_chat", clientId);
+      socket.emit("read_chat", { chatId: clientId, readerType: "staff" });
+    };
+
+    const handleDisconnect = (reason: any) => {
+      console.log("Socket disconnected", reason);
+      setSocketConnected(false);
+    };
+
+    const handleError = (error: any) => {
+      console.error("Socket.IO error:", error);
+    };
+
+    const handleTriggerWarning = ({ chatId, matches, message }: any) => {
+      if (chatId !== clientId) return;
+      const warningText = `Trigger warning for chat ${chatId}: ${matches.join(", ")} - ${message}`;
+      console.error(warningText);
+      setTriggerWarning(warningText);
+      setTimeout(() => setTriggerWarning(null), 10000);
+    };
+
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+    socket.on("connect_error", handleError);
+    socket.on("chat_history", handleHistory);
+    socket.on("chat_message", handleIncoming);
+    socket.on("trigger_warning", handleTriggerWarning);
+
+    return () => {
+        socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+      socket.off("connect_error", handleError);
+      socket.off("chat_history", handleHistory);
+      socket.off("chat_message", handleIncoming);
+      socket.off("trigger_warning", handleTriggerWarning);
+      socket.disconnect();
+    };
+  }, [clientId]);
 
   if (!client) {
     return (
@@ -21,9 +94,37 @@ export default function ChatDetail() {
     );
   }
 
+  const handleSend = () => {
+    if (message.trim()) {
+      const msg = {
+        id: Date.now(),
+        chatId: clientId || "unknown",
+        senderId: 0,
+        senderType: "staff" as const,
+        message: message.trim(),
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        read: false,
+      };
+      setMessages((prev) => [...prev, msg]);
+      socketRef.current?.emit("chat_message", msg);
+      setMessage("");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white flex flex-col max-w-[390px] mx-auto h-screen">
       {/* Header */}
+      <div className="px-4 py-2 text-xs text-gray-100">
+        Socket status: {socketConnected ? "connected" : "disconnected"}
+      </div>
+      {triggerWarning && (
+        <div className="bg-red-100 border border-red-300 text-red-900 px-4 py-3">
+          {triggerWarning}
+        </div>
+      )}
       <div className="bg-[#1DC6B4] px-4 py-3 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
           <button
@@ -82,7 +183,13 @@ export default function ChatDetail() {
                     : "text-gray-500"
                 }`}
               >
-                {msg.timestamp}
+                {msg.timestamp || (msg as any).time}
+                {msg.senderType === "staff" && (
+                  <div className="text-[10px] mt-1 flex items-center gap-1 text-white/60">
+                    <Check size={12} />
+                    {msg.read ? "Gelezen" : "Verstuurd"}
+                  </div>
+                )}
               </div>
             </div>
           </div>
