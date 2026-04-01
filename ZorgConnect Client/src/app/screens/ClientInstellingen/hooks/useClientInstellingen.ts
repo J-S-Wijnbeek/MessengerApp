@@ -2,8 +2,43 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { User, Bell, Shield, HelpCircle, FileText, LogOut } from "lucide-react";
 import { useToggle } from "../../../hooks/useToggle";
+import {
+  applyA11yPrefsToDocument,
+  readA11yPrefsFromStorage,
+  writeA11yPrefToStorage,
+  readColorThemeFromStorage,
+  writeColorThemeToStorage,
+  type ColorThemeId,
+} from "../../../hooks/useAccessibilityPreferences";
 
-export function useClientInstellingen() {
+export type ClientInstellingenHook = {
+  navigate: ReturnType<typeof useNavigate>;
+  berichtenNotif: boolean;
+  toggleBerichtenNotif: () => void;
+  afsprakenNotif: boolean;
+  toggleAfsprakenNotif: () => void;
+  sosBevestiging: boolean;
+  handleSosToggle: (next: boolean) => void;
+  faceId: boolean;
+  toggleFaceId: () => void;
+  groteTekst: boolean;
+  toggleGroteTekst: (next: boolean) => void;
+  hoogContrast: boolean;
+  toggleHoogContrast: (next: boolean) => void;
+  darkMode: boolean;
+  toggleDarkMode: (next: boolean) => void;
+  colorTheme: ColorThemeId;
+  setColorTheme: (theme: ColorThemeId) => void;
+  handleLogout: () => void;
+  settingsOptions: Array<{
+    icon: any;
+    label: string;
+    action: () => void;
+    isDestructive?: boolean;
+  }>;
+};
+
+export function useClientInstellingen(): ClientInstellingenHook {
   const navigate = useNavigate();
   const { value: berichtenNotif, toggle: toggleBerichtenNotif } = useToggle(true);
   const { value: afsprakenNotif, toggle: toggleAfsprakenNotif } = useToggle(true);
@@ -43,8 +78,33 @@ export function useClientInstellingen() {
     persistLocatieDelen(next);
   };
   const { value: faceId, toggle: toggleFaceId } = useToggle(false);
-  const { value: groteTekst, toggle: toggleGroteTekst } = useToggle(false);
-  const { value: hoogContrast, toggle: toggleHoogContrast } = useToggle(false);
+  const [groteTekst, setGroteTekst] = useState<boolean>(() => readA11yPrefsFromStorage().largeText);
+  const [hoogContrast, setHoogContrast] = useState<boolean>(() => readA11yPrefsFromStorage().highContrast);
+  const [darkMode, setDarkMode] = useState<boolean>(() => readA11yPrefsFromStorage().darkMode);
+  const [colorTheme, setColorThemeState] = useState<ColorThemeId>(() => readColorThemeFromStorage());
+
+  const toggleGroteTekst = (next: boolean) => {
+    setGroteTekst(next);
+    writeA11yPrefToStorage("largeText", next);
+    applyA11yPrefsToDocument({ largeText: next, highContrast: hoogContrast, darkMode });
+  };
+
+  const toggleHoogContrast = (next: boolean) => {
+    setHoogContrast(next);
+    writeA11yPrefToStorage("highContrast", next);
+    applyA11yPrefsToDocument({ largeText: groteTekst, highContrast: next, darkMode });
+  };
+
+  const toggleDarkMode = (next: boolean) => {
+    setDarkMode(next);
+    writeA11yPrefToStorage("darkMode", next);
+    applyA11yPrefsToDocument({ largeText: groteTekst, highContrast: hoogContrast, darkMode: next });
+  };
+
+  const setColorTheme = (theme: ColorThemeId) => {
+    setColorThemeState(theme);
+    writeColorThemeToStorage(theme);
+  };
 
   const handleLogout = () => {
     navigate("/");
@@ -81,6 +141,10 @@ export function useClientInstellingen() {
     toggleGroteTekst,
     hoogContrast,
     toggleHoogContrast,
+    darkMode,
+    toggleDarkMode,
+    colorTheme,
+    setColorTheme,
     handleLogout,
     settingsOptions,
     locatieDelen,

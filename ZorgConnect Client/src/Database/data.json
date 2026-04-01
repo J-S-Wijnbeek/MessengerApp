@@ -4,13 +4,6 @@
   },
   "appointmentRequests": [
     {
-      "date": "2026-04-03",
-      "timeOfDay": "avond",
-      "notes": "test",
-      "createdAt": "2026-03-31T11:39:39.098Z",
-      "id": "2o5DXnASd7I"
-    },
-    {
       "date": "2026-04-02",
       "timeOfDay": "middag",
       "notes": "Test 2",
@@ -49,6 +42,23 @@
       "createdByName": "Peter Hendriks",
       "createdAt": "2026-04-01T08:22:36.622Z",
       "id": "WcTwbzS0p9Q"
+    },
+    {
+      "date": "2026-04-10",
+      "timeOfDay": "middag",
+      "notes": "test",
+      "createdByName": "Peter Hendriks",
+      "createdAt": "2026-04-01T11:38:57.332Z",
+      "id": "IQSGfBdv_7Q"
+    }
+  ],
+  "emergencyContacts": [
+    {
+      "id": "ec-1",
+      "name": "Maria Hendriks",
+      "relation": "Moeder",
+      "phone": "06 9876 5432",
+      "updatedAt": "2026-04-01T10:18:45.184Z"
     }
   ],
   "$schema": "../node_modules/json-server/schema.json"

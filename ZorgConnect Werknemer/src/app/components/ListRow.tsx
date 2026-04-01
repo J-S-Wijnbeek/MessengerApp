@@ -52,7 +52,7 @@ function StatusDot({ status }: { status: StatusType }) {
 
   return (
     <div
-      className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${colors[status]}`}
+      className={`absolute bottom-0 right-0 w-3 h-3 rounded-full ${colors[status]}`}
     />
   );
 }
