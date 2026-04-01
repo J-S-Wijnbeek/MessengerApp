@@ -1,4 +1,7 @@
 {
+  "settings": {
+    "locatieDelen": true
+  },
   "appointmentRequests": [
     {
       "date": "2026-04-03",
