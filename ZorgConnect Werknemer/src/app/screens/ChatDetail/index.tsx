@@ -30,39 +30,7 @@ export default function ChatDetail() {
 
     clearPendingUrgentAlert(clientId);
 
-    let mounted = true;
     let socket: any = null;
-    const controller = new AbortController();
-
-    const connectSocket = () => {
-      socket = io(SOCKET_URL, {
-        autoConnect: false,
-        reconnection: false,
-        timeout: 5000,
-        transports: ["websocket", "polling"],
-      });
-      socketRef.current = socket;
-      socket.open();
-
-      const handleHistory = ({ chatId, history }: any) => {
-        if (chatId !== clientId) return;
-        setMessages((prev) => (history.length > 0 ? history : prev));
-      };
-
-      const handleIncoming = (msg: any) => {
-        if (msg.chatId !== clientId) return;
-        setMessages((prev) =>
-          prev.some((existing) => existing.id === msg.id) ? prev : [...prev, msg]
-        );
-      };
-
-      const handleConnect = () => {
-        console.log("Socket connected", socket.id, "for chat", clientId);
-        setSocketConnected(true);
-        socket.emit("join_chat", clientId);
-        socket.emit("read_chat", { chatId: clientId, readerType: "staff" });
-        socket.emit("join_staff");
-      };
 
     const handleHistory = ({ chatId, history }: any) => {
       if (chatId !== clientId) return;
@@ -81,22 +49,11 @@ export default function ChatDetail() {
       setSocketConnected(true);
       socket.emit("join_chat", clientId);
       socket.emit("read_chat", { chatId: clientId, readerType: "staff" });
+      socket.emit("join_staff");
     };
 
-      const handleUrgentAlert = ({ chatId, matches, message }: any) => {
-        const alertText = `Noodoproep voor chat ${chatId}: ${matches.join(", ")} – ${message}`;
-        console.error(alertText);
-        setUrgentAlert(alertText);
-        setTimeout(() => setUrgentAlert(null), 10000);
-      };
-
-      socket.on("connect", handleConnect);
-      socket.on("disconnect", handleDisconnect);
-      socket.on("connect_error", handleError);
-      socket.on("chat_history", handleHistory);
-      socket.on("chat_message", handleIncoming);
-      socket.on("trigger_warning", handleTriggerWarning);
-      socket.on("urgent_alert", handleUrgentAlert);
+    const handleDisconnect = () => {
+      setSocketConnected(false);
     };
 
     const handleError = (error: any) => {
@@ -111,20 +68,42 @@ export default function ChatDetail() {
       setTimeout(() => setTriggerWarning(null), 10000);
     };
 
-    socket.on("connect", handleConnect);
-    socket.on("disconnect", handleDisconnect);
-    socket.on("connect_error", handleError);
-    socket.on("chat_history", handleHistory);
-    socket.on("chat_message", handleIncoming);
-    socket.on("trigger_warning", handleTriggerWarning);
+    const handleUrgentAlert = ({ chatId, matches, message }: any) => {
+      const alertText = `Noodoproep voor chat ${chatId}: ${matches.join(", ")} – ${message}`;
+      console.error(alertText);
+      setUrgentAlert(alertText);
+      setTimeout(() => setUrgentAlert(null), 10000);
+    };
+
+    const connectSocket = () => {
+      socket = io(SOCKET_URL, {
+        autoConnect: false,
+        reconnection: false,
+        timeout: 5000,
+        transports: ["websocket", "polling"],
+      });
+      socketRef.current = socket;
+      socket.open();
+
+      socket.on("connect", handleConnect);
+      socket.on("disconnect", handleDisconnect);
+      socket.on("connect_error", handleError);
+      socket.on("chat_history", handleHistory);
+      socket.on("chat_message", handleIncoming);
+      socket.on("trigger_warning", handleTriggerWarning);
+      socket.on("urgent_alert", handleUrgentAlert);
+    };
+
+    connectSocket();
 
     return () => {
-        socket.off("connect", handleConnect);
+      socket.off("connect", handleConnect);
       socket.off("disconnect", handleDisconnect);
       socket.off("connect_error", handleError);
       socket.off("chat_history", handleHistory);
       socket.off("chat_message", handleIncoming);
       socket.off("trigger_warning", handleTriggerWarning);
+      socket.off("urgent_alert", handleUrgentAlert);
       socket.disconnect();
     };
   }, [clientId]);
