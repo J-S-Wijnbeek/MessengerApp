@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "dev": "vite",
+    "dev": "npx concurrently --kill-others \"npm --prefix ../server run start\" \"vite\"",
     "db": "json-server --watch src/Database/data.json --port 3001"
   },
   "dependencies": {
@@ -69,6 +69,7 @@
   "devDependencies": {
     "@tailwindcss/vite": "4.1.12",
     "@vitejs/plugin-react": "4.7.0",
+    "concurrently": "^8.2.0",
     "json-server": "^1.0.0-beta.15",
     "tailwindcss": "4.1.12",
     "vite": "^6.4.1"
