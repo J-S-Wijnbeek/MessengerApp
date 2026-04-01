@@ -32,10 +32,11 @@ export default function ClientAgenda() {
     lastRequest,
   } = useClientAgenda();
 
-  const plannedUpcoming = (plannedMockAppointments as any[]).filter((a) => !a?.isPast);
-  const plannedToday = plannedUpcoming.filter((a) => a?.date === "Vandaag");
-  const plannedLater = plannedUpcoming.filter((a) => a?.date !== "Vandaag");
-  const plannedPast = (plannedMockAppointments as any[]).filter((a) => a?.isPast);
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const plannedAll = plannedMockAppointments as any[];
+  const plannedToday = plannedAll.filter((a) => a?.isoDate === todayStr);
+  const plannedLater = plannedAll.filter((a) => a?.isoDate > todayStr);
+  const plannedPast = plannedAll.filter((a) => a?.isoDate < todayStr);
 
   const formatTimeOfDay = (tod: string) => {
     switch (tod) {
@@ -97,7 +98,7 @@ export default function ClientAgenda() {
   }: {
     apt: {
       id: number | string;
-      date: string;
+      isoDate: string;
       time: string;
       title: string;
       location?: string;
@@ -109,7 +110,11 @@ export default function ClientAgenda() {
     <div key={apt.id} className="px-4 py-3 border-b border-gray-100">
       <div className="flex items-start gap-3">
         <div className="flex-1">
-          {showDate && <div className="text-xs text-gray-500 mb-1">{apt.date}</div>}
+          {showDate && (
+            <div className="text-xs text-gray-500 mb-1">
+              {apt.isoDate === todayStr ? "Vandaag" : formatDateNL(apt.isoDate)}
+            </div>
+          )}
           <div className="flex items-baseline justify-between gap-3">
             <div className="font-bold text-lg">{apt.title}</div>
             <div className="text-sm font-medium text-gray-700">{apt.time}</div>
