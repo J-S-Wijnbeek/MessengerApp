@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
-import { TealHeader } from "../components/TealHeader";
-import { ClientBottomNav } from "../components/ClientBottomNav";
-import { FAB } from "../components/FAB";
-import { mockClients, mockCoupledCareWorkers } from "../data/mockData";
+import { TealHeader } from "../../components/TealHeader";
+import { ClientBottomNav } from "../../components/ClientBottomNav";
+import { FAB } from "../../components/FAB";
+import { mockClients, mockCoupledCareWorkers } from "../../data/mockData";
 import { Send, ArrowLeft, X, Plus, Search, AlertCircle, Check } from "lucide-react";
 import { useLocation } from "react-router";
 
@@ -19,10 +19,9 @@ export default function Berichten() {
   const initialChatId = location.state?.chatId || null;
   const socketRef = useRef<any>(null);
   const selectedChatRef = useRef<number | null>(initialChatId);
-  const currentClientId = 1;
-  const currentChatId = currentClientId.toString();
 
   const [selectedChat, setSelectedChat] = useState<number | null>(initialChatId);
+  const currentChatId = selectedChat ? selectedChat.toString() : "";
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState(initialMockMessages);
   const [showNewChatSheet, setShowNewChatSheet] = useState(false);
@@ -103,7 +102,7 @@ export default function Berichten() {
     if (!currentChatId) return;
     socketRef.current?.emit("join_chat", currentChatId);
     socketRef.current?.emit("read_chat", { chatId: currentChatId, readerType: "client" });
-  }, []);
+  }, [currentChatId]);
 
   const activeMessages = messages.filter((msg) => msg.chatId === currentChatId);
 
@@ -140,6 +139,44 @@ export default function Berichten() {
   const availableStaff = mockCoupledCareWorkers.filter(
     (worker) => worker.status === "beschikbaar"
   );
+
+  const selectedStaffMember = selectedChat
+    ? mockCoupledCareWorkers.find((worker) => worker.id === selectedChat) ?? null
+    : null;
+  const isStaffUnavailable = selectedStaffMember
+    ? selectedStaffMember.status !== "beschikbaar"
+    : false;
+  const statusText = selectedStaffMember?.status === "achterwacht"
+    ? "Deze medewerker reageert mogelijk later."
+    : "Je bericht wordt later gelezen.";
+
+  const openChat = (workerId: number) => {
+    setSelectedChat(workerId);
+    setShowUnavailableAlert(true);
+  };
+
+  const closeChat = () => {
+    setSelectedChat(null);
+  };
+
+  const openNewChatSheet = () => setShowNewChatSheet(true);
+  const closeNewChatSheet = () => setShowNewChatSheet(false);
+  const startChat = (workerId: number) => {
+    setSelectedChat(workerId);
+    setShowNewChatSheet(false);
+    setShowUnavailableAlert(true);
+  };
+
+  const getChatPreview = (workerId: number) => {
+    const chatId = workerId.toString();
+    const chatMessages = messages.filter((msg) => msg.chatId === chatId);
+    const lastMessage = chatMessages[chatMessages.length - 1];
+
+    return {
+      text: lastMessage?.message || "",
+      time: lastMessage?.timestamp || "",
+    };
+  };
 
   if (selectedChat) {
     const chatSuggestions = [
@@ -234,7 +271,7 @@ export default function Berichten() {
                 <div>{msg.message}</div>
                 <div className="flex items-center gap-2 mt-1 text-xs">
                   <span className={msg.senderType === "client" ? "text-white/80" : "text-gray-500"}>
-                    {msg.timestamp || msg.time}
+                    {msg.timestamp}
                   </span>
                   {msg.senderType === "client" && (
                     <span className="flex items-center gap-1 text-white/60">
