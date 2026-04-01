@@ -4,6 +4,7 @@ import ClientHome from "../screens/ClientHome";
 import ClientAgenda from "../screens/ClientAgenda";
 import ClientInstellingen from "../screens/ClientInstellingen";
 import ClientProfiel from "../screens/ClientProfiel";
+import ClientMedicatieZoeken from "../screens/ClientMedicatieZoeken";
 import Berichten from "../screens/Berichten";
 import SOSScreen from "../screens/SOSScreen";
 import { ErrorBoundary } from "../components/ErrorBoundary";
@@ -32,6 +33,11 @@ export const clientRoutes: RouteObject[] = [
   {
     path: "/profiel",
     Component: ClientProfiel,
+    ErrorBoundary: ErrorBoundary,
+  },
+  {
+    path: "/medicatie",
+    Component: ClientMedicatieZoeken,
     ErrorBoundary: ErrorBoundary,
   },
   {

@@ -27,6 +27,81 @@ export default function ClientHome() {
     navigateToChat,
   } = useClientHome();
 
+  const [vraagDraft, setVraagDraft] = useState("");
+  const [vraag, setVraag] = useState("");
+
+  const recommended = useMemo(() => {
+    const text = vraag.trim().toLowerCase();
+    if (!text) return [];
+
+    const hasAny = (words: string[]) => words.some((w) => text.includes(w));
+    const roles: Array<"Psycholoog" | "Verpleegkundige" | "Begeleider"> = [];
+
+    // Psycholoog triggers
+    if (
+      hasAny([
+        "angst", "paniek", "paniekaanval", "stress", "somber", "depressie", 
+        "trauma", "slaap", "gedachten", "suïcide", "suicide", "zelfmoord",
+        "zelfbeschadiging", "automutilatie", "neerslachtig", "verdrietig", 
+        "hopeloos", "onzeker", "burn-out", "overspannen", "prikkelbaar", 
+        "eenzaam", "fobie", "spanning", "gejaagd", "dwang", "herbeleving", 
+        "flashback", "onrust", "wanhoop", "concentratie", "piekeren", "verward"
+      ])
+    ) {
+      roles.push("Psycholoog");
+    }
+
+    // Verpleegkundige triggers
+    if (
+      hasAny([
+        "medicatie", "medicijn", "bijwerking", "dosering", "pijn", "koorts", 
+        "misselijk", "hoofdpijn", "duizelig", "infectie", "recept", "kuur", 
+        "pil", "tablet", "injectie", "prik", "insuline", "voorraad", "afbouwen", 
+        "wond", "verband", "bloeddruk", "suikerwaarde", "ontsteking", "braken", 
+        "moe", "vermoeidheid", "uitputting", "benauwd", "obstipatie", "diarree"
+      ])
+    ) {
+      roles.push("Verpleegkundige");
+    }
+
+    // Begeleider triggers
+    if (
+      hasAny([
+        "afspraak", "planning", "dag", "school", "werk", "thuis", "begeleiding", 
+        "hulp", "ondersteuning", "praktisch", "structuur", "ritme", "dagbesteding", 
+        "vrije tijd", "sport", "hobby", "brief", "post", "financiën", "geld", 
+        "budget", "instanties", "gemeente", "uitkering", "kamer", "buren", 
+        "familie", "vrienden", "ruzie", "conflict", "bezoek", "koken", 
+        "boodschappen", "huishouden", "opruimen", "douchen", "zelfzorg"
+      ])
+    ) {
+      roles.push("Begeleider");
+    }
+
+    const uniqueRoles = Array.from(new Set(roles));
+    if (uniqueRoles.length === 0) return [];
+
+    const byRole = (role: string) => {
+      const combined = [...beschikbaarCoupled, ...achterwachtCoupled, ...nietBeschikbaarCoupled];
+      const matches = combined.filter((w) => w.role === role);
+      const sorted = [
+        ...matches.filter((w) => w.status === "beschikbaar"),
+        ...matches.filter((w) => w.status === "achterwacht"),
+        ...matches.filter((w) => w.status === "niet-beschikbaar"),
+      ];
+      return sorted;
+    };
+
+    const recs = uniqueRoles.flatMap((r) => byRole(r).slice(0, 2));
+    // dedupe on id, preserve order
+    const seen = new Set<number>();
+    return recs.filter((w) => {
+      if (seen.has(w.id)) return false;
+      seen.add(w.id);
+      return true;
+    });
+  }, [vraag, beschikbaarCoupled, achterwachtCoupled, nietBeschikbaarCoupled]);
+
   const faqItems = useMemo<FaqItem[]>(
     () => [
       {
@@ -99,6 +174,94 @@ export default function ClientHome() {
           >
             Neem contact op
           </button>
+        </div>
+      </div>
+
+      {/* Stel een vraag*/}
+      <div className="px-4 mb-4">
+        <div className="border border-border rounded-2xl bg-card p-4">
+          <div className="font-bold text-foreground mb-2">Stel een vraag</div>
+          <div className="text-sm text-muted-foreground mb-3">
+            Beschrijf kort je vraag. We raden passende medewerkers aan (bijv. psycholoog of verpleegkundige).
+          </div>
+
+          <textarea
+            value={vraagDraft}
+            onChange={(e) => setVraagDraft(e.target.value)}
+            placeholder="Bijv. Ik heb last van angst en slaap slecht…"
+            className="w-full min-h-[92px] p-3 rounded-lg border border-border bg-background outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
+          />
+
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              onClick={() => setVraag(vraagDraft)}
+              className="bg-secondary text-secondary-foreground py-2.5 px-4 rounded-lg font-medium hover:bg-secondary/90 transition-colors"
+            >
+              Aanbevelen
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setVraagDraft("");
+                setVraag("");
+              }}
+              className="py-2.5 px-4 rounded-lg font-medium border border-border bg-background hover:bg-muted/50 transition-colors"
+            >
+              Wissen
+            </button>
+          </div>
+
+          {vraag.trim() && (
+            <div className="mt-4">
+              <div className="text-sm font-semibold text-foreground mb-2">Aanbevolen medewerkers</div>
+
+              {recommended.length === 0 ? (
+                <div className="text-sm text-muted-foreground">
+                  Geen specifieke match gevonden. Je kunt ook direct contact opnemen met de snelst bereikbare medewerker
+                  hierboven.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {recommended.map((w) => (
+                    <div
+                      key={w.id}
+                      className="border border-border rounded-lg p-3 bg-background flex items-center justify-between gap-3"
+                    >
+                      <div>
+                        <div className="font-medium text-foreground">{w.name}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {w.role} •{" "}
+                          <span
+                            className={
+                              w.status === "beschikbaar"
+                                ? "text-green-600 dark:text-green-400 font-semibold"
+                                : w.status === "achterwacht"
+                                ? "text-primary font-semibold"
+                                : "text-muted-foreground font-semibold"
+                            }
+                          >
+                            {w.status === "beschikbaar"
+                              ? "Beschikbaar"
+                              : w.status === "achterwacht"
+                              ? "Achterwacht"
+                              : "Niet beschikbaar"}
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => navigateToChat(w.id)}
+                        className="shrink-0 bg-primary text-primary-foreground py-2 px-3 rounded-lg font-medium hover:opacity-95 active:opacity-90 transition-opacity"
+                      >
+                        Ga naar chat
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

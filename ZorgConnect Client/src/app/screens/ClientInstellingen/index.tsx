@@ -43,6 +43,14 @@ export default function ClientInstellingen() {
         </button>
       </div>
 
+      {/* Medicatie */}
+      <SectionBar title="Medicatie"/>
+        <button className="w-full px-4 py-3 border-b border-border flex items-center justify-between">
+          <div className="text-foreground font-normal zc-toggle-label">Medicatie</div>
+          <ChevronRight size={20} className="text-muted-foreground" onClick={() => navigate("/medicatie")}/>
+        </button>
+      
+
       {/* Notifications */}
       <SectionBar title="Meldingen" />
       <ToggleRow

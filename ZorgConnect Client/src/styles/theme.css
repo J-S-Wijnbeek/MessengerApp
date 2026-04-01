@@ -58,7 +58,7 @@ html.a11y-high-contrast body {
 }
 
 html.a11y-high-contrast .zc-toggle-label {
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--font-weight-medium) !important;
 }
 
 html.a11y-high-contrast:not(.dark) {
