@@ -72,6 +72,7 @@ export default function ClientAgenda() {
       timeOfDay: string;
       notes: string;
       createdByName: string;
+      chosenWorker?: string;
     };
     showDate?: boolean;
   }) => (
@@ -83,6 +84,11 @@ export default function ClientAgenda() {
           <div className="text-sm text-muted-foreground mb-1">
             Aangevraagd door <span className="font-medium">{apt.createdByName}</span>
           </div>
+          {apt.chosenWorker?.trim() ? (
+            <div className="text-sm text-muted-foreground mb-1">
+              Verzorger: <span className="font-medium">{apt.chosenWorker}</span>
+            </div>
+          ) : null}
           {apt.notes?.trim() ? (
             <div className="text-sm text-muted-foreground">{apt.notes}</div>
           ) : (
@@ -248,6 +254,12 @@ export default function ClientAgenda() {
                   {lastRequest ? formatTimeOfDay(lastRequest.timeOfDay) : "-"}
                 </span>
               </div>
+              {lastRequest?.chosenWorker?.trim() ? (
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-muted-foreground">Verzorger</span>
+                  <span className="font-medium text-foreground">{lastRequest.chosenWorker}</span>
+                </div>
+              ) : null}
               <div className="pt-2 border-t border-border">
                 <div className="text-muted-foreground mb-1">Notities</div>
                 <div className="text-foreground">
