@@ -6,7 +6,7 @@ interface TealHeaderProps {
 
 export function TealHeader({ title, subtitle, rightIcon }: TealHeaderProps) {
   return (
-    <div className="bg-[#F5A623] text-white text-center py-4 px-4 flex items-center justify-center relative">
+    <div className="bg-primary text-primary-foreground text-center py-4 px-4 flex items-center justify-center relative">
       <div>
         <h1 className="font-bold text-lg">{title}</h1>
         {subtitle && <div className="text-sm opacity-90 mt-1">{subtitle}</div>}

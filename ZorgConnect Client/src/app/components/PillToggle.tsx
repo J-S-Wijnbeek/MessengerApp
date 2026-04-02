@@ -8,15 +8,15 @@ interface PillToggleProps {
 
 export function PillToggle({ options, value, onChange }: PillToggleProps) {
   return (
-    <div className="inline-flex rounded-full border border-gray-300 overflow-hidden">
+    <div className="inline-flex rounded-full border border-border overflow-hidden">
       {options.map((option) => (
         <button
           key={option}
           onClick={() => onChange(option)}
           className={`flex-1 py-2 px-4 rounded-full font-medium transition-all ${
             value === option
-              ? "bg-[#F5A623] text-white"
-              : "bg-white text-gray-700"
+              ? "bg-primary text-primary-foreground"
+              : "bg-background text-foreground"
           }`}
         >
           {option}
