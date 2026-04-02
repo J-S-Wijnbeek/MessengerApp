@@ -1,6 +1,31 @@
+
 import { ArrowLeft, Send, Info, Check } from "lucide-react";
 import { io } from "socket.io-client";
+import { useRef, useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router";
+import { mockLinkedClientsDetailed } from "../../data/mockData";
 import { useChatDetail } from "./hooks/useChatDetail";
+
+// Socket URL constant (adjust if needed)
+const SOCKET_URL = "http://localhost:3001";
+
+// Remove pending urgent alert for a client from localStorage
+function clearPendingUrgentAlert(clientId: string | number | undefined) {
+  if (!clientId || typeof window === "undefined") return;
+  const key = "pendingUrgentAlerts";
+  try {
+    const stored = window.localStorage.getItem(key);
+    if (!stored) return;
+    const alerts = JSON.parse(stored);
+    const filtered = Array.isArray(alerts)
+      ? alerts.filter((item) => String(item.chatId) !== String(clientId))
+      : [];
+    window.localStorage.setItem(key, JSON.stringify(filtered));
+  } catch {
+    // ignore
+  }
+}
+
 
 export default function ChatDetail() {
   const { clientId } = useParams();
@@ -12,6 +37,9 @@ export default function ChatDetail() {
   const [triggerWarning, setTriggerWarning] = useState<string | null>(null);
   const [urgentAlert, setUrgentAlert] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Get navigation helpers from useChatDetail
+  const { goBack, goToClientProfile } = useChatDetail();
 
   const client = mockLinkedClientsDetailed.find(
     (c) => c.id === Number(clientId)
