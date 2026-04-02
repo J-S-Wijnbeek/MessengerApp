@@ -8,6 +8,8 @@ export interface Appointment {
   date: string;
   timeOfDay: "ochtend" | "middag" | "avond" | "geen-voorkeur";
   notes: string;
+  chosenWorker: "Lucas de Vries" | "Jeroen Bakker" | "Emma Jansen" | "Sophie van der Berg"; // leeg of naam van gekozen medewerker
+  contactType?: "telefoongesprek" | "afspraak";
   createdByName: string;
   createdAt: string;
 }
@@ -15,7 +17,9 @@ export interface Appointment {
 export interface AppointmentRequest {
   date: string;
   timeOfDay: "ochtend" | "middag" | "avond" | "geen-voorkeur";
+  chosenWorker: string;
   notes: string;
+  contactType: "telefoongesprek" | "afspraak";
 }
 
 const createId = () => {
@@ -45,8 +49,9 @@ export function useClientAgenda() {
     return fromMock as Appointment[];
   }, []);
 
-  const plannedMockAppointments = useMemo(() => {
-    return (mockData as unknown as { mockAppointments?: unknown }).mockAppointments ?? [];
+  const plannedMockAppointments = useMemo<Appointment[]>(() => {
+    const fromMock = (mockData as unknown as { mockAppointments?: unknown }).mockAppointments ?? [];
+    return fromMock as Appointment[];
   }, []);
 
   const [requestedAppointments, setRequestedAppointments] = useState<Appointment[]>(() => {
@@ -116,6 +121,8 @@ export function useClientAgenda() {
       date: request.date,
       timeOfDay: request.timeOfDay,
       notes: request.notes,
+      chosenWorker: request.chosenWorker as Appointment["chosenWorker"],
+      contactType: request.contactType,
       createdByName: currentUserName,
       createdAt: new Date().toISOString(),
     };
@@ -139,6 +146,8 @@ export function useClientAgenda() {
             date: request.date,
             timeOfDay: request.timeOfDay,
             notes: request.notes,
+            chosenWorker: request.chosenWorker as Appointment["chosenWorker"],
+            contactType: request.contactType,
             createdByName: currentUserName,
             createdAt: optimistic.createdAt,
           } satisfies Omit<Appointment, "id">),
@@ -179,5 +188,6 @@ export function useClientAgenda() {
     isRequestSentOpen,
     setIsRequestSentOpen,
     lastRequest,
+    requestedAppointments,
   };
 }

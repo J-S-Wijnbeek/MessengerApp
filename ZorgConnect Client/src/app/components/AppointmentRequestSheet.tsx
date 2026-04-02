@@ -1,17 +1,24 @@
 import React, { useMemo, useState } from "react";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { mockAvailability, mockStaff, mockCoupledCareWorkers, mockOtherStaff } from "../data/mockData";
+import { Appointment } from "../screens/ClientAgenda/hooks/useClientAgenda";
 
 interface AppointmentRequestSheetProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (request: AppointmentRequest) => void;
+  bookedAppointments: {
+    requested: Appointment[];
+    planned: Appointment[];
+  };
 }
 
 export interface AppointmentRequest {
   date: string;
   timeOfDay: "ochtend" | "middag" | "avond" | "geen-voorkeur";
   notes: string;
+  chosenWorker: string;
+  contactType: "telefoongesprek" | "afspraak";
 }
 
 type StaffStatus = "beschikbaar" | "achterwacht" | "niet-beschikbaar" | "onbekend";
@@ -85,14 +92,17 @@ const getSlotCardColors = (category: SlotCategory) => {
   }
 };
 
-export function AppointmentRequestSheet({
+function AppointmentRequestSheetInternal({
   isOpen,
   onClose,
   onSubmit,
+  bookedAppointments,
 }: AppointmentRequestSheetProps) {
   const [timeOfDay, setTimeOfDay] = useState<"ochtend" | "middag" | "avond" | "geen-voorkeur">("geen-voorkeur");
   const [date, setDate] = useState("");
   const [notes, setNotes] = useState("");
+  const [chosenWorker, setChosenWorker] = useState("");
+  const [contactType, setContactType] = useState<"telefoongesprek" | "afspraak">("afspraak");
   const [currentMonth, setCurrentMonth] = useState(() => {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);
@@ -180,7 +190,49 @@ export function AppointmentRequestSheet({
 
   const selectedDateAvailability = date ? mockAvailability[date] : null;
 
-  if (!isOpen) return null;
+  // All caretakers with "beschikbaar" status across all staff lists
+  const allAvailableCaretakers = useMemo(() => {
+    const allStaff = [...mockStaff, ...mockCoupledCareWorkers, ...mockOtherStaff];
+    const seen = new Set<string>();
+    const result: string[] = [];
+    for (const s of allStaff) {
+      if (s.status === "beschikbaar" && !seen.has(s.name)) {
+        seen.add(s.name);
+        result.push(s.name);
+      }
+    }
+    return result;
+  }, []);
+
+  // Exclude workers already booked for this date and time
+  const availableWorkers = useMemo(() => {
+    const allAppointments = [...(bookedAppointments.requested || []), ...(bookedAppointments.planned || [])];
+    const bookedWorkers = allAppointments
+      .filter(a => a.date === date && (timeOfDay === "geen-voorkeur" || a.timeOfDay === timeOfDay))
+      .map(a => a.chosenWorker)
+      .filter(Boolean);
+
+    if (!date) return [];
+
+    // If schedule data exists for this date/slot, use it; otherwise fall back to all beschikbaar caretakers
+    if (selectedDateAvailability) {
+      let slotStaff: string[] = [];
+      if (timeOfDay === "geen-voorkeur") {
+        const ochtend = selectedDateAvailability.ochtend?.staff || [];
+        const middag = selectedDateAvailability.middag?.staff || [];
+        const avond = selectedDateAvailability.avond?.staff || [];
+        slotStaff = Array.from(new Set([...ochtend, ...middag, ...avond]));
+      } else {
+        slotStaff = selectedDateAvailability[timeOfDay]?.staff || [];
+      }
+      // Also include beschikbaar caretakers not listed in the schedule
+      const combined = Array.from(new Set([...slotStaff, ...allAvailableCaretakers]));
+      return combined.filter(worker => !bookedWorkers.includes(worker as any));
+    }
+
+    // No schedule data — show all beschikbaar caretakers
+    return allAvailableCaretakers.filter(worker => !bookedWorkers.includes(worker as any));
+  }, [date, timeOfDay, selectedDateAvailability, bookedAppointments, allAvailableCaretakers]);
 
   const handleSubmit = () => {
     if (!date) {
@@ -192,11 +244,17 @@ export function AppointmentRequestSheet({
       alert("Deze datum heeft geen beschikbaarheid voor het gekozen dagdeel");
       return;
     }
-    onSubmit({ date, timeOfDay, notes });
+    if (!chosenWorker) {
+      alert("Selecteer een medewerker");
+      return;
+    }
+    onSubmit({ date, timeOfDay, notes, chosenWorker, contactType });
     // Reset form
     setDate("");
     setTimeOfDay("geen-voorkeur");
     setNotes("");
+    setChosenWorker("");
+    setContactType("afspraak");
     onClose();
   };
 
@@ -234,6 +292,35 @@ export function AppointmentRequestSheet({
             >
               <X size={24} className="text-muted-foreground" />
             </button>
+          </div>
+
+          {/* Contact Type Selection */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-muted-foreground mb-2">
+              Type contact
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => setContactType("afspraak")}
+                className={`py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
+                  contactType === "afspraak"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-foreground hover:bg-muted/80"
+                }`}
+              >
+                📅 Afspraak
+              </button>
+              <button
+                onClick={() => setContactType("telefoongesprek")}
+                className={`py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
+                  contactType === "telefoongesprek"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-foreground hover:bg-muted/80"
+                }`}
+              >
+                📞 Telefoongesprek
+              </button>
+            </div>
           </div>
 
           {/* Time of Day Selection - First */}
@@ -566,6 +653,27 @@ export function AppointmentRequestSheet({
             />
           </div>
 
+          {/* Worker Selection */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-muted-foreground mb-2">
+              Kies een medewerker
+            </label>
+            <select
+              value={chosenWorker}
+              onChange={e => setChosenWorker(e.target.value)}
+              className="w-full px-4 py-2 border border-border bg-background rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary"
+              disabled={availableWorkers.length === 0}
+            >
+              <option value="">-- Kies een medewerker --</option>
+              {availableWorkers.map((worker) => (
+                <option key={worker} value={worker}>{worker}</option>
+              ))}
+            </select>
+            {availableWorkers.length === 0 && (
+              <div className="text-xs text-muted-foreground mt-1">Geen medewerkers beschikbaar voor dit moment.</div>
+            )}
+          </div>
+
           {/* Action Buttons */}
           <div className="flex gap-3">
             <button
@@ -586,4 +694,11 @@ export function AppointmentRequestSheet({
       </div>
     </>
   );
+}
+
+export function AppointmentRequestSheet(props: AppointmentRequestSheetProps) {
+  if (!props.isOpen) {
+    return null;
+  }
+  return <AppointmentRequestSheetInternal {...props} />;
 }

@@ -30,10 +30,11 @@ export default function ClientAgenda() {
     isRequestSentOpen,
     setIsRequestSentOpen,
     lastRequest,
+    requestedAppointments,
   } = useClientAgenda();
 
   const todayStr = new Date().toISOString().slice(0, 10);
-  const plannedAll = plannedMockAppointments as any[];
+  const plannedAll = (plannedMockAppointments || []) as any[];
   const plannedToday = plannedAll.filter((a) => a?.isoDate === todayStr);
   const plannedLater = plannedAll.filter((a) => a?.isoDate > todayStr);
   const plannedPast = plannedAll.filter((a) => a?.isoDate < todayStr);
@@ -71,6 +72,8 @@ export default function ClientAgenda() {
       timeOfDay: string;
       notes: string;
       createdByName: string;
+      chosenWorker?: string;
+      contactType?: string;
     };
     showDate?: boolean;
   }) => (
@@ -82,6 +85,16 @@ export default function ClientAgenda() {
           <div className="text-sm text-muted-foreground mb-1">
             Aangevraagd door <span className="font-medium">{apt.createdByName}</span>
           </div>
+          {apt.chosenWorker?.trim() ? (
+            <div className="text-sm text-muted-foreground mb-1">
+              Verzorger: <span className="font-medium">{apt.chosenWorker}</span>
+            </div>
+          ) : null}
+          {apt.contactType ? (
+            <div className="text-sm text-muted-foreground mb-1">
+              Type: <span className="font-medium">{apt.contactType === "telefoongesprek" ? "📞 Telefoongesprek" : "📅 Afspraak"}</span>
+            </div>
+          ) : null}
           {apt.notes?.trim() ? (
             <div className="text-sm text-muted-foreground">{apt.notes}</div>
           ) : (
@@ -212,14 +225,20 @@ export default function ClientAgenda() {
         </>
       )}
 
-      <FAB onClick={openSheet} />
+      <FAB icon="plus" onClick={openSheet} />
+
       <AppointmentRequestSheet
         isOpen={isSheetOpen}
         onClose={closeSheet}
         onSubmit={handleAppointmentRequest}
+        bookedAppointments={{
+          requested: requestedAppointments,
+          planned: plannedMockAppointments,
+        }}
       />
+
       <AlertDialog open={isRequestSentOpen} onOpenChange={setIsRequestSentOpen}>
-        <AlertDialogContent className="border-0 p-0 overflow-hidden">
+        <AlertDialogContent>
           <div className="bg-secondary text-secondary-foreground px-6 py-5">
             <AlertDialogHeader className="text-left">
               <AlertDialogTitle className="text-secondary-foreground">Afspraakverzoek verstuurd</AlertDialogTitle>
@@ -241,6 +260,20 @@ export default function ClientAgenda() {
                   {lastRequest ? formatTimeOfDay(lastRequest.timeOfDay) : "-"}
                 </span>
               </div>
+              {lastRequest?.chosenWorker?.trim() ? (
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-muted-foreground">Verzorger</span>
+                  <span className="font-medium text-foreground">{lastRequest.chosenWorker}</span>
+                </div>
+              ) : null}
+              {lastRequest?.contactType ? (
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-muted-foreground">Type contact</span>
+                  <span className="font-medium text-foreground">
+                    {lastRequest.contactType === "telefoongesprek" ? "📞 Telefoongesprek" : "📅 Afspraak"}
+                  </span>
+                </div>
+              ) : null}
               <div className="pt-2 border-t border-border">
                 <div className="text-muted-foreground mb-1">Notities</div>
                 <div className="text-foreground">
