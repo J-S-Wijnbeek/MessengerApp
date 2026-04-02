@@ -1,17 +1,23 @@
 import React, { useMemo, useState } from "react";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { mockAvailability, mockStaff, mockCoupledCareWorkers, mockOtherStaff } from "../data/mockData";
+import { Appointment } from "../screens/ClientAgenda/hooks/useClientAgenda";
 
 interface AppointmentRequestSheetProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (request: AppointmentRequest) => void;
+  bookedAppointments: {
+    requested: Appointment[];
+    planned: Appointment[];
+  };
 }
 
 export interface AppointmentRequest {
   date: string;
   timeOfDay: "ochtend" | "middag" | "avond" | "geen-voorkeur";
   notes: string;
+  chosenWorker: string;
 }
 
 type StaffStatus = "beschikbaar" | "achterwacht" | "niet-beschikbaar" | "onbekend";
@@ -85,14 +91,16 @@ const getSlotCardColors = (category: SlotCategory) => {
   }
 };
 
-export function AppointmentRequestSheet({
+function AppointmentRequestSheetInternal({
   isOpen,
   onClose,
   onSubmit,
+  bookedAppointments,
 }: AppointmentRequestSheetProps) {
   const [timeOfDay, setTimeOfDay] = useState<"ochtend" | "middag" | "avond" | "geen-voorkeur">("geen-voorkeur");
   const [date, setDate] = useState("");
   const [notes, setNotes] = useState("");
+  const [chosenWorker, setChosenWorker] = useState("");
   const [currentMonth, setCurrentMonth] = useState(() => {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);
@@ -180,7 +188,28 @@ export function AppointmentRequestSheet({
 
   const selectedDateAvailability = date ? mockAvailability[date] : null;
 
-  if (!isOpen) return null;
+  // Exclude workers already booked for this date and time
+  const availableWorkers = useMemo(() => {
+    if (!date || !selectedDateAvailability) return [];
+    let slotStaff: string[] = [];
+    if (timeOfDay === "geen-voorkeur") {
+      // Union of all slots
+      const ochtend = selectedDateAvailability.ochtend?.staff || [];
+      const middag = selectedDateAvailability.middag?.staff || [];
+      const avond = selectedDateAvailability.avond?.staff || [];
+      slotStaff = Array.from(new Set([...ochtend, ...middag, ...avond]));
+    } else {
+      slotStaff = selectedDateAvailability[timeOfDay]?.staff || [];
+    }
+    // Find all workers already booked for this date and time
+    const allAppointments = [...(bookedAppointments.requested || []), ...(bookedAppointments.planned || [])];
+    const bookedWorkers = allAppointments
+      .filter(a => a.date === date && (timeOfDay === "geen-voorkeur" || a.timeOfDay === timeOfDay))
+      .map(a => a.chosenWorker)
+      .filter(Boolean);
+    // Exclude booked workers
+    return slotStaff.filter(worker => !bookedWorkers.includes(worker as any));
+  }, [date, timeOfDay, selectedDateAvailability, bookedAppointments]);
 
   const handleSubmit = () => {
     if (!date) {
@@ -192,11 +221,16 @@ export function AppointmentRequestSheet({
       alert("Deze datum heeft geen beschikbaarheid voor het gekozen dagdeel");
       return;
     }
-    onSubmit({ date, timeOfDay, notes });
+    if (!chosenWorker) {
+      alert("Selecteer een medewerker");
+      return;
+    }
+    onSubmit({ date, timeOfDay, notes, chosenWorker });
     // Reset form
     setDate("");
     setTimeOfDay("geen-voorkeur");
     setNotes("");
+    setChosenWorker("");
     onClose();
   };
 
@@ -566,6 +600,27 @@ export function AppointmentRequestSheet({
             />
           </div>
 
+          {/* Worker Selection */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-muted-foreground mb-2">
+              Kies een medewerker
+            </label>
+            <select
+              value={chosenWorker}
+              onChange={e => setChosenWorker(e.target.value)}
+              className="w-full px-4 py-2 border border-border bg-background rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary"
+              disabled={availableWorkers.length === 0}
+            >
+              <option value="">-- Kies een medewerker --</option>
+              {availableWorkers.map((worker) => (
+                <option key={worker} value={worker}>{worker}</option>
+              ))}
+            </select>
+            {availableWorkers.length === 0 && (
+              <div className="text-xs text-muted-foreground mt-1">Geen medewerkers beschikbaar voor dit moment.</div>
+            )}
+          </div>
+
           {/* Action Buttons */}
           <div className="flex gap-3">
             <button
@@ -586,4 +641,11 @@ export function AppointmentRequestSheet({
       </div>
     </>
   );
+}
+
+export function AppointmentRequestSheet(props: AppointmentRequestSheetProps) {
+  if (!props.isOpen) {
+    return null;
+  }
+  return <AppointmentRequestSheetInternal {...props} />;
 }

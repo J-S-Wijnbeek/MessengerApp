@@ -30,10 +30,11 @@ export default function ClientAgenda() {
     isRequestSentOpen,
     setIsRequestSentOpen,
     lastRequest,
+    requestedAppointments,
   } = useClientAgenda();
 
   const todayStr = new Date().toISOString().slice(0, 10);
-  const plannedAll = plannedMockAppointments as any[];
+  const plannedAll = (plannedMockAppointments || []) as any[];
   const plannedToday = plannedAll.filter((a) => a?.isoDate === todayStr);
   const plannedLater = plannedAll.filter((a) => a?.isoDate > todayStr);
   const plannedPast = plannedAll.filter((a) => a?.isoDate < todayStr);
@@ -212,14 +213,20 @@ export default function ClientAgenda() {
         </>
       )}
 
-      <FAB onClick={openSheet} />
+      <FAB icon="plus" onClick={openSheet} />
+
       <AppointmentRequestSheet
         isOpen={isSheetOpen}
         onClose={closeSheet}
         onSubmit={handleAppointmentRequest}
+        bookedAppointments={{
+          requested: requestedAppointments,
+          planned: plannedMockAppointments,
+        }}
       />
+
       <AlertDialog open={isRequestSentOpen} onOpenChange={setIsRequestSentOpen}>
-        <AlertDialogContent className="border-0 p-0 overflow-hidden">
+        <AlertDialogContent>
           <div className="bg-secondary text-secondary-foreground px-6 py-5">
             <AlertDialogHeader className="text-left">
               <AlertDialogTitle className="text-secondary-foreground">Afspraakverzoek verstuurd</AlertDialogTitle>

@@ -50,6 +50,51 @@
       "createdByName": "Peter Hendriks",
       "createdAt": "2026-04-01T11:38:57.332Z",
       "id": "IQSGfBdv_7Q"
+    },
+    {
+      "date": "2026-04-15",
+      "timeOfDay": "ochtend",
+      "notes": "",
+      "chosenWorker": "Jeroen Bakker",
+      "createdByName": "Peter Hendriks",
+      "createdAt": "2026-04-02T08:58:59.513Z",
+      "id": "EtKHyxW8AwU"
+    },
+    {
+      "date": "2026-04-15",
+      "timeOfDay": "ochtend",
+      "notes": "",
+      "chosenWorker": "Sophie van der Berg",
+      "createdByName": "Peter Hendriks",
+      "createdAt": "2026-04-02T09:00:33.297Z",
+      "id": "Z2JQ55DN70M"
+    },
+    {
+      "date": "2026-04-14",
+      "timeOfDay": "avond",
+      "notes": "",
+      "chosenWorker": "Emma Jansen",
+      "createdByName": "Peter Hendriks",
+      "createdAt": "2026-04-02T09:01:44.161Z",
+      "id": "4-eVst0sN7M"
+    },
+    {
+      "date": "2026-04-14",
+      "timeOfDay": "avond",
+      "notes": "testtetetete",
+      "chosenWorker": "Jeroen Bakker",
+      "createdByName": "Peter Hendriks",
+      "createdAt": "2026-04-02T09:02:12.711Z",
+      "id": "NNMlcbuSN80"
+    },
+    {
+      "date": "2026-04-10",
+      "timeOfDay": "ochtend",
+      "notes": "",
+      "chosenWorker": "Lucas de Vries",
+      "createdByName": "Peter Hendriks",
+      "createdAt": "2026-04-02T09:23:35.678Z",
+      "id": "cZxHMFmb4MI"
     }
   ],
   "groupChats": [
@@ -251,5 +296,5 @@
       "updatedAt": "2026-04-01T10:18:45.184Z"
     }
   ],
-  "$schema": "../node_modules/json-server/schema.json"
+  "$schema": "./node_modules/json-server/schema.json"
 }
