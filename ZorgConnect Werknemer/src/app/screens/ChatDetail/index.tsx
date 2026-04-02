@@ -37,7 +37,6 @@ export default function ChatDetail() {
   const [triggerWarning, setTriggerWarning] = useState<string | null>(null);
   const [urgentAlert, setUrgentAlert] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
   // Get navigation helpers from useChatDetail
   const { goBack, goToClientProfile } = useChatDetail();
 
