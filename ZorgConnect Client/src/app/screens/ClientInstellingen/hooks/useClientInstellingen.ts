@@ -11,6 +11,8 @@ import {
   type ColorThemeId,
 } from "../../../hooks/useAccessibilityPreferences";
 
+const AUTH_STORAGE_KEY = "zorgconnect:client:isAuthed";
+
 export type ClientInstellingenHook = {
   navigate: ReturnType<typeof useNavigate>;
   berichtenNotif: boolean;
@@ -19,6 +21,8 @@ export type ClientInstellingenHook = {
   toggleAfsprakenNotif: () => void;
   sosBevestiging: boolean;
   handleSosToggle: (next: boolean) => void;
+  locatieDelen: boolean;
+  toggleLocatieDelen: (next: boolean) => void;
   faceId: boolean;
   toggleFaceId: () => void;
   groteTekst: boolean;
@@ -38,7 +42,7 @@ export type ClientInstellingenHook = {
   }>;
 };
 
-export function useClientInstellingen(): ClientInstellingenHook {
+export function useClientInstellingen() {
   const navigate = useNavigate();
   const { value: berichtenNotif, toggle: toggleBerichtenNotif } = useToggle(true);
   const { value: afsprakenNotif, toggle: toggleAfsprakenNotif } = useToggle(true);
@@ -107,6 +111,11 @@ export function useClientInstellingen(): ClientInstellingenHook {
   };
 
   const handleLogout = () => {
+    try {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+    } catch {
+      // ignore
+    }
     navigate("/");
   };
 

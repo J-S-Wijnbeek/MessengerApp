@@ -266,6 +266,41 @@ export default function ClientHome() {
         </div>
       </div>
 
+      {/* Mijn medicatie */}
+      <div className="px-4 my-4">
+        <button
+          type="button"
+          onClick={() => setShowMedicatie(!showMedicatie)}
+          className="w-full border border-border rounded-2xl bg-card p-4 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted transition-colors"
+        >
+          <div>
+            <div className="font-bold text-foreground">Mijn medicatie</div>
+            <div className="text-sm text-muted-foreground mt-0.5">
+              {mockMedications.length} medicijn{mockMedications.length !== 1 ? "en" : ""} voorgeschreven
+            </div>
+          </div>
+          {showMedicatie ? <ChevronUp size={20} className="text-muted-foreground flex-shrink-0" /> : <ChevronDown size={20} className="text-muted-foreground flex-shrink-0" />}
+        </button>
+
+        {showMedicatie && (
+          <div className="mt-2 space-y-2">
+            {mockMedications.map((med) => (
+              <div key={med.id} className="border border-border rounded-xl bg-card p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="font-semibold text-foreground">{med.name}</div>
+                  <div className="text-sm font-medium text-primary shrink-0">{med.dosage}</div>
+                </div>
+                <div className="text-sm text-muted-foreground mt-1">{med.frequency}</div>
+                <div className="text-sm text-muted-foreground mt-1">Doel: {med.purpose}</div>
+                <div className="text-xs text-muted-foreground mt-2">
+                  Voorgeschreven door {med.prescribedBy} · Vanaf {new Date(med.startDate).toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Mijn zorgteam Section */}
       <div className="px-4 mb-4">
         <div className="font-bold text-foreground mb-3">Mijn zorgteam</div>
@@ -348,13 +383,13 @@ export default function ClientHome() {
       )}
 
       {/* Collapsible Other Staff */}
-      <button
+      {/* <button
         onClick={() => setShowOtherStaff(!showOtherStaff)}
         className="w-full px-4 py-3 border-b border-border flex items-center justify-between text-muted-foreground hover:bg-muted"
       >
         <span>Overige medewerkers</span>
         {showOtherStaff ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-      </button>
+      </button> */}
 
       {showOtherStaff && (
         <>
@@ -394,40 +429,7 @@ export default function ClientHome() {
         </>
       )}
 
-      {/* Mijn medicatie */}
-      <div className="px-4 mb-4">
-        <button
-          type="button"
-          onClick={() => setShowMedicatie(!showMedicatie)}
-          className="w-full border border-border rounded-2xl bg-card p-4 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted transition-colors"
-        >
-          <div>
-            <div className="font-bold text-foreground">Mijn medicatie</div>
-            <div className="text-sm text-muted-foreground mt-0.5">
-              {mockMedications.length} medicijn{mockMedications.length !== 1 ? "en" : ""} voorgeschreven
-            </div>
-          </div>
-          {showMedicatie ? <ChevronUp size={20} className="text-muted-foreground flex-shrink-0" /> : <ChevronDown size={20} className="text-muted-foreground flex-shrink-0" />}
-        </button>
-
-        {showMedicatie && (
-          <div className="mt-2 space-y-2">
-            {mockMedications.map((med) => (
-              <div key={med.id} className="border border-border rounded-xl bg-card p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="font-semibold text-foreground">{med.name}</div>
-                  <div className="text-sm font-medium text-primary shrink-0">{med.dosage}</div>
-                </div>
-                <div className="text-sm text-muted-foreground mt-1">{med.frequency}</div>
-                <div className="text-sm text-muted-foreground mt-1">Doel: {med.purpose}</div>
-                <div className="text-xs text-muted-foreground mt-2">
-                  Voorgeschreven door {med.prescribedBy} · Vanaf {new Date(med.startDate).toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" })}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      
 
       {/* FAQ Section */}
       <div className="px-4 my-4">

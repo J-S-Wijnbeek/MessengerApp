@@ -3,7 +3,7 @@ import { ClientBottomNav } from "../../components/ClientBottomNav";
 import { SectionBar } from "../../components/SectionBar";
 import { ChevronRight } from "lucide-react";
 import { ToggleRow } from "../../components/ToggleRow";
-import { useClientInstellingen, type ClientInstellingenHook } from "./hooks/useClientInstellingen";
+import { useClientInstellingen } from "./hooks/useClientInstellingen";
 import type { ColorThemeId } from "../../hooks/useAccessibilityPreferences";
 
 const THEME_CHOICES: { id: ColorThemeId; label: string; swatch: [string, string] }[] = [
@@ -169,6 +169,16 @@ export default function ClientInstellingen() {
         value={darkMode}
         onChange={toggleDarkMode}
       />
+
+      {/* Privacy */}
+      <SectionBar title="Privacy" />
+      <div className="px-4 py-4 border-b border-border">
+        <div className="text-foreground font-medium zc-toggle-label mb-2">Privacy-informatie</div>
+        <p className="text-sm text-muted-foreground">
+          We gaan zorgvuldig om met je gegevens. Je berichten en afspraken worden alleen gebruikt om de app goed te laten
+          werken. Locatie delen is optioneel en kun je hierboven altijd aan- of uitzetten.
+        </p>
+      </div>
 
 
       {/* Logout */}
