@@ -1,7 +1,6 @@
 {
   "settings": {
-    "locatieDelen": true,
-    "omgangPreferences": "Rustig benaderen\n\nTrigger: overgeven/ED"
+    "locatieDelen": true
   },
   "appointmentRequests": [
     {
@@ -125,6 +124,26 @@
       "createdByName": "Peter Hendriks",
       "createdAt": "2026-04-02T09:58:02.117Z",
       "id": "4zGWnSPPL7E"
+    },
+    {
+      "date": "2026-04-16",
+      "timeOfDay": "middag",
+      "notes": "",
+      "chosenWorker": "Jeroen Bakker",
+      "contactType": "telefoongesprek",
+      "createdByName": "Peter Hendriks",
+      "createdAt": "2026-04-02T10:08:01.072Z",
+      "id": "ZRwSU9HL48U"
+    },
+    {
+      "date": "2026-04-16",
+      "timeOfDay": "middag",
+      "notes": "Test",
+      "chosenWorker": "Nikki Nijboer",
+      "contactType": "telefoongesprek",
+      "createdByName": "Peter Hendriks",
+      "createdAt": "2026-04-02T10:17:18.296Z",
+      "id": "KeYEtINceyo"
     }
   ],
   "groupChats": [
@@ -315,6 +334,30 @@
         }
       ],
       "createdAt": "2026-04-01T20:44:52.349Z"
+    },
+    {
+      "id": "KFyQaeKxFcs",
+      "title": "Groep (Sophie, Jeroen)",
+      "memberIds": [
+        1,
+        2
+      ],
+      "status": "pending",
+      "memberApprovals": {
+        "1": false,
+        "2": false
+      },
+      "messages": [
+        {
+          "id": "sys-mnhbgh4b-87esjuy",
+          "chatId": "g-mnhbgh4b-1dz1vax",
+          "senderType": "system",
+          "message": "Je mag maximaal 2 berichten sturen in deze groepschat. Alle gekozen medewerkers moeten dit groepsverzoek goedkeuren voordat de chat verder gaat. Tot die tijd kun je na die 2 berichten niets meer sturen.",
+          "timestamp": "12:12",
+          "read": true
+        }
+      ],
+      "createdAt": "2026-04-02T10:12:53.291Z"
     }
   ],
   "emergencyContacts": [

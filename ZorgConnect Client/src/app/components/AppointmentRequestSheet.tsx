@@ -532,7 +532,7 @@ function AppointmentRequestSheetInternal({
                       className={`p-3 rounded-lg border ${colors.card}`}
                     >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm text-muted-foreground font-medium">Ochtend (08:00-12:00)</span>
+                    <span className="text-sm text-muted-foreground font-medium">Ochtend</span>
                     <span className={`text-xs font-medium ${slot.available > 0 ? colors.badge : "text-muted-foreground/70"}`}>
                       {slot.available > 0
                         ? `${slot.available} beschikbaar`
@@ -570,7 +570,7 @@ function AppointmentRequestSheetInternal({
                       className={`p-3 rounded-lg border ${colors.card}`}
                     >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm text-muted-foreground font-medium">Middag (12:00-18:00)</span>
+                    <span className="text-sm text-muted-foreground font-medium">Middag</span>
                     <span className={`text-xs font-medium ${slot.available > 0 ? colors.badge : "text-muted-foreground/70"}`}>
                       {slot.available > 0
                         ? `${slot.available} beschikbaar`
@@ -608,7 +608,7 @@ function AppointmentRequestSheetInternal({
                       className={`p-3 rounded-lg border ${colors.card}`}
                     >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm text-muted-foreground font-medium">Avond (18:00-22:00)</span>
+                    <span className="text-sm text-muted-foreground font-medium">Avond</span>
                     <span className={`text-xs font-medium ${slot.available > 0 ? colors.badge : "text-muted-foreground/70"}`}>
                       {slot.available > 0
                         ? `${slot.available} beschikbaar`

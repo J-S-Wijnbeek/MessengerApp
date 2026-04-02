@@ -225,7 +225,7 @@ export default function ClientAgenda() {
         </>
       )}
 
-      <FAB icon="plus" onClick={openSheet} />
+      <FAB onClick={openSheet} />
 
       <AppointmentRequestSheet
         isOpen={isSheetOpen}
