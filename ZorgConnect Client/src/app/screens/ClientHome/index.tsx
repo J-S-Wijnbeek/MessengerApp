@@ -1,7 +1,7 @@
 import { TealHeader } from "../../components/TealHeader";
 import { ClientBottomNav } from "../../components/ClientBottomNav";
 import { SectionBar } from "../../components/SectionBar";
-import { mockCoupledCareWorkers } from "../../data/mockData";
+import { mockCoupledCareWorkers, mockMedications } from "../../data/mockData";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { ListRow, StatusType } from "../../components/ListRow";
 import { useClientHome } from "./hooks/useClientHome";
@@ -157,6 +157,7 @@ export default function ClientHome() {
   );
 
   const [openFaqId, setOpenFaqId] = useState<string | null>(null);
+  const [showMedicatie, setShowMedicatie] = useState(false);
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-20 w-full mx-auto">
@@ -392,6 +393,41 @@ export default function ClientHome() {
             ))}
         </>
       )}
+
+      {/* Mijn medicatie */}
+      <div className="px-4 mb-4">
+        <button
+          type="button"
+          onClick={() => setShowMedicatie(!showMedicatie)}
+          className="w-full border border-border rounded-2xl bg-card p-4 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted transition-colors"
+        >
+          <div>
+            <div className="font-bold text-foreground">Mijn medicatie</div>
+            <div className="text-sm text-muted-foreground mt-0.5">
+              {mockMedications.length} medicijn{mockMedications.length !== 1 ? "en" : ""} voorgeschreven
+            </div>
+          </div>
+          {showMedicatie ? <ChevronUp size={20} className="text-muted-foreground flex-shrink-0" /> : <ChevronDown size={20} className="text-muted-foreground flex-shrink-0" />}
+        </button>
+
+        {showMedicatie && (
+          <div className="mt-2 space-y-2">
+            {mockMedications.map((med) => (
+              <div key={med.id} className="border border-border rounded-xl bg-card p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="font-semibold text-foreground">{med.name}</div>
+                  <div className="text-sm font-medium text-primary shrink-0">{med.dosage}</div>
+                </div>
+                <div className="text-sm text-muted-foreground mt-1">{med.frequency}</div>
+                <div className="text-sm text-muted-foreground mt-1">Doel: {med.purpose}</div>
+                <div className="text-xs text-muted-foreground mt-2">
+                  Voorgeschreven door {med.prescribedBy} · Vanaf {new Date(med.startDate).toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* FAQ Section */}
       <div className="px-4 my-4">
