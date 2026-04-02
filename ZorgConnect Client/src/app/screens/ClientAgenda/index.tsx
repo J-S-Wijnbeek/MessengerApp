@@ -73,6 +73,7 @@ export default function ClientAgenda() {
       notes: string;
       createdByName: string;
       chosenWorker?: string;
+      contactType?: string;
     };
     showDate?: boolean;
   }) => (
@@ -87,6 +88,11 @@ export default function ClientAgenda() {
           {apt.chosenWorker?.trim() ? (
             <div className="text-sm text-muted-foreground mb-1">
               Verzorger: <span className="font-medium">{apt.chosenWorker}</span>
+            </div>
+          ) : null}
+          {apt.contactType ? (
+            <div className="text-sm text-muted-foreground mb-1">
+              Type: <span className="font-medium">{apt.contactType === "telefoongesprek" ? "📞 Telefoongesprek" : "📅 Afspraak"}</span>
             </div>
           ) : null}
           {apt.notes?.trim() ? (
@@ -258,6 +264,14 @@ export default function ClientAgenda() {
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-muted-foreground">Verzorger</span>
                   <span className="font-medium text-foreground">{lastRequest.chosenWorker}</span>
+                </div>
+              ) : null}
+              {lastRequest?.contactType ? (
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-muted-foreground">Type contact</span>
+                  <span className="font-medium text-foreground">
+                    {lastRequest.contactType === "telefoongesprek" ? "📞 Telefoongesprek" : "📅 Afspraak"}
+                  </span>
                 </div>
               ) : null}
               <div className="pt-2 border-t border-border">

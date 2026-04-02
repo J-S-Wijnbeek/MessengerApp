@@ -9,6 +9,7 @@ export interface Appointment {
   timeOfDay: "ochtend" | "middag" | "avond" | "geen-voorkeur";
   notes: string;
   chosenWorker: "Lucas de Vries" | "Jeroen Bakker" | "Emma Jansen" | "Sophie van der Berg"; // leeg of naam van gekozen medewerker
+  contactType?: "telefoongesprek" | "afspraak";
   createdByName: string;
   createdAt: string;
 }
@@ -18,6 +19,7 @@ export interface AppointmentRequest {
   timeOfDay: "ochtend" | "middag" | "avond" | "geen-voorkeur";
   chosenWorker: string;
   notes: string;
+  contactType: "telefoongesprek" | "afspraak";
 }
 
 const createId = () => {
@@ -120,6 +122,7 @@ export function useClientAgenda() {
       timeOfDay: request.timeOfDay,
       notes: request.notes,
       chosenWorker: request.chosenWorker as Appointment["chosenWorker"],
+      contactType: request.contactType,
       createdByName: currentUserName,
       createdAt: new Date().toISOString(),
     };
@@ -144,6 +147,7 @@ export function useClientAgenda() {
             timeOfDay: request.timeOfDay,
             notes: request.notes,
             chosenWorker: request.chosenWorker as Appointment["chosenWorker"],
+            contactType: request.contactType,
             createdByName: currentUserName,
             createdAt: optimistic.createdAt,
           } satisfies Omit<Appointment, "id">),
