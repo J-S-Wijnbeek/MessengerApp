@@ -10,6 +10,15 @@ type EmergencyContact = {
   updatedAt: string; // ISO string
 };
 
+type ClientSettings = {
+  locatieDelen?: boolean;
+  omgangPreferences?: string;
+};
+
+const localStorageSettingsKey = "zorgconnect:client:settings";
+const defaultOmgangPreferences =
+  "Bij onrust: rustig benaderen, 1-op-1 praten. Vermijd drukte. Overleg bij escalatie met begeleider.";
+
 const createId = () => {
   const c = (globalThis as unknown as { crypto?: { randomUUID?: () => string } }).crypto;
   if (c?.randomUUID) return c.randomUUID();
@@ -47,6 +56,7 @@ export function useClientProfiel() {
     () => `${dbBaseUrl.replace(/\/$/, "")}/emergencyContacts`,
     [dbBaseUrl],
   );
+  const settingsUrl = useMemo(() => `${dbBaseUrl.replace(/\/$/, "")}/settings`, [dbBaseUrl]);
   const localStorageKey = "zorgconnect:client:emergencyContacts";
 
   const mockEmergencyContacts = useMemo<EmergencyContact[]>(() => {
@@ -65,9 +75,31 @@ export function useClientProfiel() {
     }
   });
 
+  const [omgangPreferences, setOmgangPreferences] = useState<string>(() => {
+    try {
+      const raw = localStorage.getItem(localStorageSettingsKey);
+      if (!raw) return defaultOmgangPreferences;
+      const parsed = JSON.parse(raw) as ClientSettings;
+      const v = typeof parsed?.omgangPreferences === "string" ? parsed.omgangPreferences : "";
+      return v.trim().length > 0 ? v : defaultOmgangPreferences;
+    } catch {
+      return defaultOmgangPreferences;
+    }
+  });
+
   const persistEmergencyContacts = (next: EmergencyContact[]) => {
     try {
       localStorage.setItem(localStorageKey, JSON.stringify(next));
+    } catch {
+      // ignore
+    }
+  };
+
+  const persistSettings = (patch: Partial<ClientSettings>) => {
+    try {
+      const prevRaw = localStorage.getItem(localStorageSettingsKey);
+      const prev = prevRaw ? (JSON.parse(prevRaw) as ClientSettings) : ({} as ClientSettings);
+      localStorage.setItem(localStorageSettingsKey, JSON.stringify({ ...prev, ...patch }));
     } catch {
       // ignore
     }
@@ -97,6 +129,47 @@ export function useClientProfiel() {
       cancelled = true;
     };
   }, [emergencyContactsUrl]);
+
+  // Settings ophalen (json-server). Alleen overnemen als er een waarde is.
+  useEffect(() => {
+    let cancelled = false;
+    async function fetchSettings() {
+      try {
+        const res = await fetch(settingsUrl, { method: "GET" });
+        if (!res.ok) return;
+        const data = (await res.json()) as ClientSettings;
+        const next = typeof data?.omgangPreferences === "string" ? data.omgangPreferences : "";
+        if (!cancelled && next.trim().length > 0) {
+          setOmgangPreferences(next);
+          persistSettings({ omgangPreferences: next });
+        }
+      } catch {
+        // ignore
+      }
+    }
+    fetchSettings();
+    return () => {
+      cancelled = true;
+    };
+  }, [settingsUrl]);
+
+  const saveOmgangPreferences = (nextRaw: string) => {
+    const next = nextRaw.trim();
+    setOmgangPreferences(next);
+    persistSettings({ omgangPreferences: next });
+
+    (async () => {
+      try {
+        await fetch(settingsUrl, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ omgangPreferences: next } satisfies Partial<ClientSettings>),
+        });
+      } catch {
+        // ignore
+      }
+    })();
+  };
 
   const mergedEmergencyContacts = useMemo(() => {
     return mergeMostRecent(mockEmergencyContacts, emergencyContacts);
@@ -162,5 +235,7 @@ export function useClientProfiel() {
     emergencyContacts: mergedEmergencyContacts,
     upsertEmergencyContact,
     deleteEmergencyContact,
+    omgangPreferences,
+    saveOmgangPreferences,
   };
 }

@@ -1,6 +1,7 @@
 {
   "settings": {
-    "locatieDelen": true
+    "locatieDelen": true,
+    "omgangPreferences": "Rustig benaderen\n\nTrigger: overgeven/ED"
   },
   "appointmentRequests": [
     {

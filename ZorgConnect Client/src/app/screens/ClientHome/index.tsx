@@ -394,7 +394,7 @@ export default function ClientHome() {
       )}
 
       {/* FAQ Section */}
-      <div className="px-4 mt-4">
+      <div className="px-4 my-4">
         <div className="border border-border rounded-2xl bg-primary overflow-hidden">
           <div className="px-4 py-4 border-border">
             <div className="font-bold text-white">FAQ (GGZ)</div>

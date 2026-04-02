@@ -12,7 +12,14 @@ type EmergencyContactDraft = {
 };
 
 export default function ClientProfiel() {
-  const { goBack, emergencyContacts, upsertEmergencyContact, deleteEmergencyContact } = useClientProfiel();
+  const {
+    goBack,
+    emergencyContacts,
+    upsertEmergencyContact,
+    deleteEmergencyContact,
+    omgangPreferences,
+    saveOmgangPreferences,
+  } = useClientProfiel();
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<EmergencyContactDraft>({
@@ -22,9 +29,6 @@ export default function ClientProfiel() {
     phone: "",
   });
 
-  const [omgangPreferences, setOmgangPreferences] = useState<string>(
-    "Bij onrust: rustig benaderen, 1-op-1 praten. Vermijd drukte. Overleg bij escalatie met begeleider."
-  );
   const [isEditingOmgangPreferences, setIsEditingOmgangPreferences] = useState(false);
   const [omgangPreferencesDraft, setOmgangPreferencesDraft] = useState(omgangPreferences);
 
@@ -38,8 +42,8 @@ export default function ClientProfiel() {
     setOmgangPreferencesDraft(omgangPreferences);
   };
 
-  const saveOmgangPreferences = () => {
-    setOmgangPreferences(omgangPreferencesDraft.trim());
+  const commitOmgangPreferences = () => {
+    saveOmgangPreferences(omgangPreferencesDraft);
     setIsEditingOmgangPreferences(false);
   };
 
@@ -142,7 +146,7 @@ export default function ClientProfiel() {
                 />
                 <div className="flex gap-2">
                   <button
-                    onClick={saveOmgangPreferences}
+                    onClick={commitOmgangPreferences}
                     disabled={omgangPreferencesDraft.trim().length === 0}
                     className="px-3 py-2 rounded-md bg-primary text-primary-foreground text-sm disabled:opacity-50"
                   >

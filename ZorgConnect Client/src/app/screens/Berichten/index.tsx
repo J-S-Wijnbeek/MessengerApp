@@ -294,8 +294,9 @@ export default function Berichten() {
     selectedGroup.status === "pending" &&
     countClientMessagesInGroup(selectedGroup) >= MAX_CLIENT_MESSAGES_BEFORE_APPROVAL;
 
-  const handleSend = () => {
-    if (!message.trim() || selectedChatId === null) return;
+  const handleSend = (overrideText?: string) => {
+    const text = (overrideText ?? message).trim();
+    if (!text || selectedChatId === null) return;
 
     if (isGroupChatId(selectedChatId)) {
       const gc =
@@ -313,7 +314,7 @@ export default function Berichten() {
         id: createMsgId(),
         chatId: threadId,
         senderType: "client",
-        message: message.trim(),
+        message: text,
         timestamp: new Date().toLocaleTimeString("nl-NL", {
           hour: "2-digit",
           minute: "2-digit",
@@ -347,7 +348,7 @@ export default function Berichten() {
       id: Date.now(),
       chatId: currentChatId,
       senderType: "client" as const,
-      message: message.trim(),
+      message: text,
       timestamp: new Date().toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
@@ -621,7 +622,7 @@ export default function Berichten() {
                   <button
                     key={s}
                     type="button"
-                    onClick={() => setMessage(s)}
+                    onClick={() => handleSend(s)}
                     className="shrink-0 rounded-full border border-border bg-muted px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted/80 active:bg-muted transition-colors"
                   >
                     {s}
@@ -643,7 +644,7 @@ export default function Berichten() {
               className="flex-1 px-4 py-2 border border-border bg-background rounded-full focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-60"
             />
             <button
-              onClick={handleSend}
+              onClick={() => handleSend()}
               disabled={!message.trim() || !!clientBlockedOnGroup}
               className="w-10 h-10 bg-secondary text-secondary-foreground rounded-full flex items-center justify-center hover:bg-secondary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
