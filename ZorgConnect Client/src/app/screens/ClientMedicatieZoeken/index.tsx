@@ -113,7 +113,8 @@ export default function ClientMedicatieZoeken() {
   const [fdaError, setFdaError] = useState<string | null>(null);
   const [fdaResult, setFdaResult] = useState<OpenFdaLabelResult | null>(null);
   const [fdaSuggestLoading, setFdaSuggestLoading] = useState(false);
-  const [fdaSuggestionNames, setFdaSuggestionNames] = useState<string[]>([]);
+  const [fdaPrefixSuggestionNames, setFdaPrefixSuggestionNames] = useState<string[]>([]);
+  const [fdaContainsSuggestionNames, setFdaContainsSuggestionNames] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [expandedSectionTitles, setExpandedSectionTitles] = useState<Record<string, boolean>>({});
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState<number>(-1);
@@ -121,80 +122,138 @@ export default function ClientMedicatieZoeken() {
   useEffect(() => {
     const q = query.trim().toLowerCase();
     if (!q || q.length < 2) {
-      setFdaSuggestionNames([]);
+      setFdaPrefixSuggestionNames([]);
+      setFdaContainsSuggestionNames([]);
       setFdaSuggestLoading(false);
       return;
     }
 
+    let controller: AbortController | null = null;
+
     // Debounce: openFDA suggestions tijdens typen
     const t = window.setTimeout(async () => {
+      controller = new AbortController();
       try {
         setFdaSuggestLoading(true);
 
         const cache = safeGetFdaSuggestCache();
-        const cacheKey = `generic_prefix:${q}`;
-        if (cache[cacheKey]) {
-          setFdaSuggestionNames(cache[cacheKey]);
-          return;
-        }
 
-        await rateLimitFdaSuggest();
-        const url = `https://api.fda.gov/drug/label.json?search=openfda.generic_name:${encodeURIComponent(
-          `${q}*`
-        )}&limit=15`;
-        const controller = new AbortController();
-        const res = await fetch(url, { signal: controller.signal });
+        const prefixCacheKey = `generic_prefix:${q}`;
+        if (cache[prefixCacheKey]) {
+          setFdaPrefixSuggestionNames(cache[prefixCacheKey]);
+        } else {
+          await rateLimitFdaSuggest();
+          const url = `https://api.fda.gov/drug/label.json?search=openfda.generic_name:${encodeURIComponent(
+            `${q}*`
+          )}&limit=25`;
+          const res = await fetch(url, { signal: controller.signal });
 
-        // openFDA geeft vaak 404 bij 0 resultaten
-        if (res.status === 404) {
-          setFdaSuggestionNames([]);
-          cache[cacheKey] = [];
-          safeSetFdaSuggestCache(cache);
-          return;
-        }
-        if (!res.ok) throw new Error(`openFDA suggesties fout (${res.status})`);
+          // openFDA geeft vaak 404 bij 0 resultaten
+          if (res.status === 404) {
+            setFdaPrefixSuggestionNames([]);
+            cache[prefixCacheKey] = [];
+            safeSetFdaSuggestCache(cache);
+          } else {
+            if (!res.ok) throw new Error(`openFDA suggesties fout (${res.status})`);
 
-        const data = (await res.json()) as OpenFdaResponse;
-        const names = new Set<string>();
-        for (const r of data.results ?? []) {
-          for (const n of r.openfda?.generic_name ?? []) {
-            if (n && n.toLowerCase().startsWith(q)) names.add(n.toLowerCase());
+            const data = (await res.json()) as OpenFdaResponse;
+            const names = new Set<string>();
+            for (const r of data.results ?? []) {
+              for (const n of r.openfda?.generic_name ?? []) {
+                if (n && n.toLowerCase().startsWith(q)) names.add(n.toLowerCase());
+              }
+            }
+
+            const sorted = Array.from(names)
+              .sort((a, b) => a.localeCompare(b))
+              .slice(0, 10);
+            setFdaPrefixSuggestionNames(sorted);
+            cache[prefixCacheKey] = sorted;
+            safeSetFdaSuggestCache(cache);
           }
         }
 
-        const sorted = Array.from(names)
-          .sort((a, b) => a.localeCompare(b))
-          .slice(0, 10);
-        setFdaSuggestionNames(sorted);
-        cache[cacheKey] = sorted;
-        safeSetFdaSuggestCache(cache);
-      } catch {
-        setFdaSuggestionNames([]);
+        // "contains" search (pas vanaf 3 letters i.v.m. performance/ruis)
+        if (q.length >= 3) {
+          const containsCacheKey = `generic_contains:${q}`;
+          if (cache[containsCacheKey]) {
+            setFdaContainsSuggestionNames(cache[containsCacheKey]);
+          } else {
+            await rateLimitFdaSuggest();
+            const url = `https://api.fda.gov/drug/label.json?search=openfda.generic_name:${encodeURIComponent(
+              `*${q}*`
+            )}&limit=50`;
+            const res = await fetch(url, { signal: controller.signal });
+
+            // openFDA geeft vaak 404 bij 0 resultaten
+            if (res.status === 404) {
+              setFdaContainsSuggestionNames([]);
+              cache[containsCacheKey] = [];
+              safeSetFdaSuggestCache(cache);
+            } else {
+              if (!res.ok) throw new Error(`openFDA suggesties fout (${res.status})`);
+
+              const data = (await res.json()) as OpenFdaResponse;
+              const names = new Set<string>();
+              for (const r of data.results ?? []) {
+                for (const n of r.openfda?.generic_name ?? []) {
+                  const nl = n?.toLowerCase();
+                  if (!nl) continue;
+                  if (nl.includes(q)) names.add(nl);
+                }
+              }
+
+              const sorted = Array.from(names)
+                .sort((a, b) => a.localeCompare(b))
+                .slice(0, 20);
+              setFdaContainsSuggestionNames(sorted);
+              cache[containsCacheKey] = sorted;
+              safeSetFdaSuggestCache(cache);
+            }
+          }
+        } else {
+          setFdaContainsSuggestionNames([]);
+        }
+      } catch (e) {
+        // AbortErrors tijdens snel typen niet als "error" behandelen
+        if (e instanceof Error && e.name === "AbortError") return;
+        setFdaPrefixSuggestionNames([]);
+        setFdaContainsSuggestionNames([]);
       } finally {
         setFdaSuggestLoading(false);
       }
     }, 650);
 
-    return () => window.clearTimeout(t);
+    return () => {
+      window.clearTimeout(t);
+      controller?.abort();
+    };
   }, [query]);
 
   const suggestions = useMemo<Suggestion[]>(() => {
     const q = query.trim();
     if (!q) return [];
 
-    // Autocomplete op prefix vanuit openFDA
+    // Autocomplete: contains én startsWith (toon startsWith eerst)
     const qLower = q.toLowerCase();
-    const fdaPrefixMatches: Suggestion[] = fdaSuggestionNames
-      .filter((n) => n.startsWith(qLower))
-      .map((n) => ({
+
+    const candidates = new Set<string>([...fdaPrefixSuggestionNames, ...fdaContainsSuggestionNames]);
+    const scored: Suggestion[] = [];
+    for (const n of candidates) {
+      const nl = n.toLowerCase();
+      if (!nl.includes(qLower)) continue;
+      const starts = nl.startsWith(qLower);
+      scored.push({
         id: `fda-${n}`,
         name: n,
-        score: 1,
+        score: starts ? 2 : 1,
         source: "fda" as const,
-      }));
+      });
+    }
 
-    return fdaPrefixMatches.slice(0, 10);
-  }, [query]);
+    scored.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
+    return scored.slice(0, 10);
+  }, [query, fdaPrefixSuggestionNames, fdaContainsSuggestionNames]);
 
   const commitSearch = (nextQuery: string) => {
     const q = nextQuery.trim();
@@ -414,7 +473,8 @@ export default function ClientMedicatieZoeken() {
 
       <div className="px-4">
         <div className="mb-4">
-          <div className="text-sm text-muted-foreground mb-2">Engelse resultaten van de FDA via openFDA</div>
+          <div className="text-sm text-muted-foreground mb-2">Engelse resultaten van de FDA (via openFDA), deze resultaten kunnen mogelijk afwijken van Nederlandse medicatie.</div>
+          <div className="text-sm text-muted-foreground mb-2">Ga dus voorzichtig om met deze resultaten en vraag bij twijfel aan een professional.</div>
 
           {fdaLoading && (
             <div className="border border-border rounded-lg p-4 bg-card text-muted-foreground">Bezig met ophalen…</div>
@@ -426,7 +486,7 @@ export default function ClientMedicatieZoeken() {
 
           {!fdaLoading && !fdaError && !fdaResult && committedQuery.trim() && (
             <div className="border border-border rounded-lg p-4 bg-card text-muted-foreground">
-              Geen openFDA label gevonden voor “{committedQuery}”.
+              Geen openFDA resultaat gevonden voor “{committedQuery}”.
             </div>
           )}
 
