@@ -83,7 +83,8 @@ export default function SOSScreen() {
 
         {/* Footer */}
         <div className="text-center font-bold text-md text-muted-foreground px-8 py-4">
-          Bij levensgevaar: bel 112
+          Bij levensgevaar: bel 112<br />
+          Bij psychische crisis: bel 113
         </div>
 
         <ClientBottomNav />
@@ -136,40 +137,45 @@ export default function SOSScreen() {
           </div>
         )}
 
-        {/* Ingedrukt-houden knop */}
-        <div className="relative mb-6">
-          <button
-            onMouseDown={startPressing}
-            onMouseUp={stopPressing}
-            onMouseLeave={stopPressing}
-            onTouchStart={startPressing}
-            onTouchEnd={stopPressing}
-            className="w-64 bg-primary text-primary-foreground py-6 rounded-lg font-bold text-lg hover:bg-primary/90 transition-colors relative overflow-hidden"
-          >
-            <div
-              className="absolute inset-0 bg-[#D9534F] transition-all duration-100"
-              style={{ width: `${progress}%` }}
-            />
-            <span className="relative z-10 flex items-center justify-center gap-2">
-              🚨 Houd ingedrukt
-            </span>
-          </button>
-          {isPressing && (
-            <div className="absolute -top-2 -left-2 -right-2 -bottom-2 border-4 border-primary rounded-lg animate-pulse" />
-          )}
-        </div>
+        {/* Ingedrukt-houden knop (alleen tonen vóór bevestiging) */}
+        {!showVerification && (
+          <div className="relative mb-6">
+            <button
+              onMouseDown={startPressing}
+              onMouseUp={stopPressing}
+              onMouseLeave={stopPressing}
+              onTouchStart={startPressing}
+              onTouchEnd={stopPressing}
+              className="w-64 bg-primary text-primary-foreground py-6 rounded-lg font-bold text-lg hover:bg-primary/90 transition-colors relative overflow-hidden"
+            >
+              <div
+                className="absolute inset-0 bg-[#D9534F] transition-all duration-100"
+                style={{ width: `${progress}%` }}
+              />
+              <span className="relative z-10 flex items-center justify-center gap-2">
+                🚨 Houd ingedrukt
+              </span>
+            </button>
+            {isPressing && (
+              <div className="absolute -top-2 -left-2 -right-2 -bottom-2 border-4 border-primary rounded-lg animate-pulse" />
+            )}
+          </div>
+        )}
 
-        <button
-          onClick={cancelSOS}
-          className="w-fit border-2 border-border text-foreground py-3 px-4 rounded-lg font-medium hover:bg-muted dark:hover:bg-muted/70 transition-colors"
-        >
-          Annuleren
-        </button>
+        {!showVerification && (
+          <button
+            onClick={cancelSOS}
+            className="w-fit border-2 border-border text-foreground py-3 px-4 rounded-lg font-medium hover:bg-muted dark:hover:bg-muted/70 transition-colors"
+          >
+            Annuleren
+          </button>
+        )}
       </div>
 
       {/* Footer */}
       <div className="text-center font-bold text-md text-muted-foreground px-8 py-4">
-        Bij levensgevaar: bel 112
+        Bij levensgevaar: bel 112<br/>
+        Bij psychische crisis: bel 113
       </div>
 
       <ClientBottomNav />
