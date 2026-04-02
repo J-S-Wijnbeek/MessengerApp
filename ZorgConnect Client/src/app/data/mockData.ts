@@ -751,6 +751,55 @@ export const mockAvailability: Record<string, {
   },
 };
 
+export type MockMedication = {
+  id: number;
+  name: string;
+  dosage: string;
+  frequency: string;
+  prescribedBy: string;
+  purpose: string;
+  startDate: string;
+};
+
+export const mockMedications: MockMedication[] = [
+  {
+    id: 1,
+    name: "Sertraline",
+    dosage: "50 mg",
+    frequency: "1x daags (ochtend)",
+    prescribedBy: "Emma Jansen",
+    purpose: "Angststoornis / Depressie",
+    startDate: "2026-01-15",
+  },
+  {
+    id: 2,
+    name: "Melatonine",
+    dosage: "3 mg",
+    frequency: "1x daags (voor het slapen)",
+    prescribedBy: "Jeroen Bakker",
+    purpose: "Slaapproblemen",
+    startDate: "2026-02-10",
+  },
+  {
+    id: 3,
+    name: "Methylfenidaat",
+    dosage: "10 mg",
+    frequency: "2x daags (ochtend en middag)",
+    prescribedBy: "Emma Jansen",
+    purpose: "Concentratie (ADHD)",
+    startDate: "2025-11-01",
+  },
+  {
+    id: 4,
+    name: "Lorazepam",
+    dosage: "0,5 mg",
+    frequency: "Zo nodig (max. 1x daags)",
+    prescribedBy: "Emma Jansen",
+    purpose: "Acute angst / paniekaanvallen",
+    startDate: "2026-03-01",
+  },
+];
+
 export type MockAppointmentRequest = {
   id: string;
   date: string; // YYYY-MM-DD
