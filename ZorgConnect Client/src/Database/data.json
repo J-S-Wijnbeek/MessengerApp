@@ -52,6 +52,196 @@
       "id": "IQSGfBdv_7Q"
     }
   ],
+  "groupChats": [
+    {
+      "id": "g-mngidwh7-ifpv2cp",
+      "title": "Groep (Nikki, Ekin)",
+      "memberIds": [
+        5,
+        6
+      ],
+      "status": "pending",
+      "memberApprovals": {
+        "5": false,
+        "6": false
+      },
+      "messages": [
+        {
+          "id": "sys-mngidwh7-cuncan5",
+          "chatId": "g-mngidwh7-ifpv2cp",
+          "senderType": "system",
+          "message": "Je mag maximaal 2 berichten sturen in deze groepschat. Alle gekozen medewerkers moeten dit groepsverzoek goedkeuren voordat de chat verder gaat. Tot die tijd kun je na die 2 berichten niets meer sturen.",
+          "timestamp": "22:39",
+          "read": true
+        },
+        {
+          "id": "mngidyex-77dx0or",
+          "chatId": "g-mngidwh7-ifpv2cp",
+          "senderType": "client",
+          "message": "Hoi, heb je even tijd om te bellen?",
+          "timestamp": "22:39",
+          "read": false
+        },
+        {
+          "id": "mngidzcd-32jo7zb",
+          "chatId": "g-mngidwh7-ifpv2cp",
+          "senderType": "client",
+          "message": "Ik voel mij niet goed.",
+          "timestamp": "22:39",
+          "read": false
+        }
+      ],
+      "createdAt": "2026-04-01T20:39:04.363Z"
+    },
+    {
+      "id": "g-mngijeze-bkxgvx7",
+      "title": "Groep (Emma, Lucas)",
+      "memberIds": [
+        3,
+        4
+      ],
+      "status": "pending",
+      "memberApprovals": {
+        "3": false,
+        "4": false
+      },
+      "messages": [
+        {
+          "id": "sys-mngijeze-z2uq2zp",
+          "chatId": "g-mngijeze-bkxgvx7",
+          "senderType": "system",
+          "message": "Je mag maximaal 2 berichten sturen in deze groepschat. Alle gekozen medewerkers moeten dit groepsverzoek goedkeuren voordat de chat verder gaat. Tot die tijd kun je na die 2 berichten niets meer sturen.",
+          "timestamp": "22:43",
+          "read": true
+        },
+        {
+          "id": "mngijjzg-h8kf1zu",
+          "chatId": "g-mngijeze-bkxgvx7",
+          "senderType": "client",
+          "message": "Zou je me kunnen helpen met iets?",
+          "timestamp": "22:43",
+          "read": false
+        },
+        {
+          "id": "mngijmnq-r5ksbpk",
+          "chatId": "g-mngijeze-bkxgvx7",
+          "senderType": "client",
+          "message": "Hoi, heb je even tijd om te bellen?",
+          "timestamp": "22:43",
+          "read": false
+        }
+      ],
+      "createdAt": "2026-04-01T20:43:21.626Z"
+    },
+    {
+      "id": "kOJXz-bjivY",
+      "title": "Groep (Sophie, Jeroen, Emma, Lucas)",
+      "memberIds": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "status": "pending",
+      "memberApprovals": {
+        "1": false,
+        "2": false,
+        "3": false,
+        "4": false
+      },
+      "messages": [
+        {
+          "id": "sys-mngilczh-2caqtjh",
+          "chatId": "g-mngilczh-izcuq23",
+          "senderType": "system",
+          "message": "Je mag maximaal 2 berichten sturen in deze groepschat. Alle gekozen medewerkers moeten dit groepsverzoek goedkeuren voordat de chat verder gaat. Tot die tijd kun je na die 2 berichten niets meer sturen.",
+          "timestamp": "22:44",
+          "read": true
+        }
+      ],
+      "createdAt": "2026-04-01T20:44:52.349Z"
+    },
+    {
+      "id": "ErblTdRvzhs",
+      "title": "Groep (Sophie, Jeroen, Emma, Lucas)",
+      "memberIds": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "status": "pending",
+      "memberApprovals": {
+        "1": false,
+        "2": false,
+        "3": false,
+        "4": false
+      },
+      "messages": [
+        {
+          "id": "sys-mngilczh-2caqtjh",
+          "chatId": "g-mngilczh-izcuq23",
+          "senderType": "system",
+          "message": "Je mag maximaal 2 berichten sturen in deze groepschat. Alle gekozen medewerkers moeten dit groepsverzoek goedkeuren voordat de chat verder gaat. Tot die tijd kun je na die 2 berichten niets meer sturen.",
+          "timestamp": "22:44",
+          "read": true
+        },
+        {
+          "id": "mngilhox-jr3qqcv",
+          "chatId": "g-mngilczh-izcuq23",
+          "senderType": "client",
+          "message": "Test",
+          "timestamp": "22:44",
+          "read": false
+        }
+      ],
+      "createdAt": "2026-04-01T20:44:52.349Z"
+    },
+    {
+      "id": "d5u6r41zUaI",
+      "title": "Groep (Sophie, Jeroen, Emma, Lucas)",
+      "memberIds": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "status": "pending",
+      "memberApprovals": {
+        "1": false,
+        "2": false,
+        "3": false,
+        "4": false
+      },
+      "messages": [
+        {
+          "id": "sys-mngilczh-2caqtjh",
+          "chatId": "g-mngilczh-izcuq23",
+          "senderType": "system",
+          "message": "Je mag maximaal 2 berichten sturen in deze groepschat. Alle gekozen medewerkers moeten dit groepsverzoek goedkeuren voordat de chat verder gaat. Tot die tijd kun je na die 2 berichten niets meer sturen.",
+          "timestamp": "22:44",
+          "read": true
+        },
+        {
+          "id": "mngilhox-jr3qqcv",
+          "chatId": "g-mngilczh-izcuq23",
+          "senderType": "client",
+          "message": "Test",
+          "timestamp": "22:44",
+          "read": false
+        },
+        {
+          "id": "mngilj9j-aod5uj0",
+          "chatId": "g-mngilczh-izcuq23",
+          "senderType": "client",
+          "message": "Hoi, heb je even tijd om te bellen?",
+          "timestamp": "22:45",
+          "read": false
+        }
+      ],
+      "createdAt": "2026-04-01T20:44:52.349Z"
+    }
+  ],
   "emergencyContacts": [
     {
       "id": "ec-1",

@@ -1,3 +1,6 @@
+/** Demo: ingelogde medewerker in deze app (voor groepschat-goedkeuringen). */
+export const DEMO_LOGGED_IN_STAFF_ID = 1;
+
 export const mockStaff = [
   {
     id: 1,

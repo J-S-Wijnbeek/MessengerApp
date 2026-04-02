@@ -1,7 +1,8 @@
 import { TealHeader } from "../../components/TealHeader";
 import { StaffBottomNav } from "../../components/StaffBottomNav";
-import { Search, MessageCircle, Plus, X } from "lucide-react";
+import { Search, MessageCircle, Plus, X, Users } from "lucide-react";
 import { useBerichten } from "./hooks/useBerichten";
+import { useGroupChatApprovals } from "./hooks/useGroupChatApprovals";
 
 export default function Berichten() {
   const {
@@ -16,9 +17,43 @@ export default function Berichten() {
     navigateToClientProfile,
   } = useBerichten();
 
+  const { pendingForMe, approve } = useGroupChatApprovals();
+
   return (
     <div className="min-h-screen bg-white pb-20 max-w-[390px] mx-auto">
       <TealHeader title="Berichten" />
+
+      {pendingForMe.length > 0 && (
+        <div className="px-4 py-3 bg-amber-50 border-b border-amber-100">
+          <div className="text-xs font-semibold text-amber-900 uppercase tracking-wide mb-2 flex items-center gap-1">
+            <Users size={14} />
+            Groepschat goedkeuren
+          </div>
+          <div className="space-y-2">
+            {pendingForMe.map((gc) => (
+              <div
+                key={gc.id}
+                className="flex items-start gap-2 p-3 bg-white rounded-xl border border-amber-100 shadow-sm"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-gray-900 text-sm">{gc.title}</div>
+                  <div className="text-xs text-gray-500 mt-0.5">
+                    Cliënt vraagt een groepschat met {gc.memberIds.length} medewerkers. Keur het verzoek goed om de chat
+                    vrij te geven.
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void approve(gc)}
+                  className="shrink-0 px-3 py-1.5 rounded-lg bg-[#1DC6B4] text-white text-xs font-medium"
+                >
+                  Goedkeuren
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Search Bar */}
       <div className="px-4 py-3 border-b border-gray-200">
