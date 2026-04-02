@@ -64,6 +64,7 @@ export default function ClientAgenda() {
       timeOfDay: string;
       notes: string;
       createdByName: string;
+      verzorger?: string;
     };
     showDate?: boolean;
   }) => (
@@ -75,6 +76,11 @@ export default function ClientAgenda() {
           <div className="text-sm text-gray-700 mb-1">
             Aangevraagd door <span className="font-medium">{apt.createdByName}</span>
           </div>
+          {apt.verzorger && (
+            <div className="text-sm text-gray-700 mb-1">
+              Verzorger: <span className="font-medium">{apt.verzorger}</span>
+            </div>
+          )}
           {apt.notes?.trim() ? (
             <div className="text-sm text-gray-600">{apt.notes}</div>
           ) : (
@@ -167,6 +173,12 @@ export default function ClientAgenda() {
                   {lastRequest ? formatTimeOfDay(lastRequest.timeOfDay) : "-"}
                 </span>
               </div>
+              {lastRequest?.verzorger && (
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-gray-500">Verzorger</span>
+                  <span className="font-medium text-gray-900">{lastRequest.verzorger}</span>
+                </div>
+              )}
               <div className="pt-2 border-t border-gray-200">
                 <div className="text-gray-500 mb-1">Notities</div>
                 <div className="text-gray-900">

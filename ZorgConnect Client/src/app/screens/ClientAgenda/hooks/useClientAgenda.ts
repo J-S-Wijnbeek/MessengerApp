@@ -9,12 +9,14 @@ export interface Appointment {
   notes: string;
   createdByName: string;
   createdAt: string;
+  verzorger?: string;
 }
 
 export interface AppointmentRequest {
   date: string;
   timeOfDay: "ochtend" | "middag" | "avond" | "geen-voorkeur";
   notes: string;
+  verzorger?: string;
 }
 
 
@@ -66,6 +68,7 @@ export function useClientAgenda() {
             date: request.date,
             timeOfDay: request.timeOfDay,
             notes: request.notes,
+            verzorger: request.verzorger,
             createdByName: currentUserName,
             createdAt: new Date().toISOString(),
           }),
