@@ -12,6 +12,7 @@ export interface AppointmentRequest {
   date: string;
   timeOfDay: "ochtend" | "middag" | "avond" | "geen-voorkeur";
   notes: string;
+  verzorger?: string;
 }
 
 type StaffStatus = "beschikbaar" | "achterwacht" | "niet-beschikbaar" | "onbekend";
@@ -91,6 +92,7 @@ export function AppointmentRequestSheet({
   onSubmit,
 }: AppointmentRequestSheetProps) {
   const [timeOfDay, setTimeOfDay] = useState<"ochtend" | "middag" | "avond" | "geen-voorkeur">("geen-voorkeur");
+  const [selectedVerzorger, setSelectedVerzorger] = useState<string | null>(null);
   const [date, setDate] = useState("");
   const [notes, setNotes] = useState("");
   const [currentMonth, setCurrentMonth] = useState(() => {
@@ -182,6 +184,24 @@ export function AppointmentRequestSheet({
 
   if (!isOpen) return null;
 
+  // Returns true if available, false if not, null if unknown (date not in mockAvailability)
+  const isVerzorgerAvailableForDate = (
+    verzorgerName: string,
+    dateStr: string,
+    tod: typeof timeOfDay,
+  ): boolean | null => {
+    const availability = mockAvailability[dateStr];
+    if (!availability) return null;
+    if (tod === "geen-voorkeur") {
+      return (
+        availability.ochtend.staff.includes(verzorgerName) ||
+        availability.middag.staff.includes(verzorgerName) ||
+        availability.avond.staff.includes(verzorgerName)
+      );
+    }
+    return availability[tod].staff.includes(verzorgerName);
+  };
+
   const handleSubmit = () => {
     if (!date) {
       alert("Selecteer een datum");
@@ -192,11 +212,23 @@ export function AppointmentRequestSheet({
       alert("Deze datum heeft geen beschikbaarheid voor het gekozen dagdeel");
       return;
     }
-    onSubmit({ date, timeOfDay, notes });
+    if (selectedVerzorger) {
+      const verzorgerAvailable = isVerzorgerAvailableForDate(selectedVerzorger, date, timeOfDay);
+      if (verzorgerAvailable === false) {
+        const timeLabel =
+          timeOfDay === "geen-voorkeur"
+            ? "op deze datum"
+            : `in de ${timeOfDay} op deze datum`;
+        alert(`${selectedVerzorger} is niet beschikbaar ${timeLabel}. Kies een andere datum of een andere verzorger.`);
+        return;
+      }
+    }
+    onSubmit({ date, timeOfDay, notes, verzorger: selectedVerzorger ?? undefined });
     // Reset form
     setDate("");
     setTimeOfDay("geen-voorkeur");
     setNotes("");
+    setSelectedVerzorger(null);
     onClose();
   };
 
@@ -294,6 +326,56 @@ export function AppointmentRequestSheet({
               >
                 Geen voorkeur
               </button>
+            </div>
+          </div>
+
+          {/* Verzorger Selection */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Verzorger voorkeur
+            </label>
+            <div className="space-y-2">
+              <button
+                onClick={() => setSelectedVerzorger(null)}
+                className={`w-full py-3 px-4 rounded-lg text-sm font-medium transition-colors text-left ${
+                  selectedVerzorger === null
+                    ? "bg-[#F5A623] text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                Geen voorkeur
+              </button>
+              {mockCoupledCareWorkers.map((worker) => {
+                const isSelected = selectedVerzorger === worker.name;
+                const statusColors = getStatusColors(worker.status as StaffStatus);
+                return (
+                  <button
+                    key={worker.id}
+                    onClick={() => setSelectedVerzorger(worker.name)}
+                    className={`w-full py-3 px-4 rounded-lg text-sm font-medium transition-colors text-left flex items-center gap-3 ${
+                      isSelected
+                        ? "bg-[#F5A623] text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                  >
+                    <div
+                      className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                        isSelected ? "bg-white" : statusColors.dot
+                      }`}
+                    />
+                    <div>
+                      <div>{worker.name}</div>
+                      <div
+                        className={`text-xs ${
+                          isSelected ? "text-white/80" : "text-gray-500"
+                        }`}
+                      >
+                        {worker.role}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -551,6 +633,26 @@ export function AppointmentRequestSheet({
               </div>
             </div>
           )}
+
+          {/* Verzorger unavailability warning */}
+          {selectedVerzorger && date && (() => {
+            const isAvailable = isVerzorgerAvailableForDate(selectedVerzorger, date, timeOfDay);
+            if (isAvailable === false) {
+              const timeLabel =
+                timeOfDay === "geen-voorkeur"
+                  ? "op deze datum"
+                  : `in de ${timeOfDay} op deze datum`;
+              return (
+                <div className="mb-4 p-3 rounded-lg border border-red-200 bg-red-50">
+                  <div className="text-sm font-medium text-red-900">Verzorger niet beschikbaar</div>
+                  <div className="text-xs text-red-800 mt-1">
+                    {selectedVerzorger} is niet beschikbaar {timeLabel}. Kies een andere datum of een andere verzorger.
+                  </div>
+                </div>
+              );
+            }
+            return null;
+          })()}
 
           {/* Notes Input */}
           <div className="mb-6">
