@@ -325,5 +325,5 @@
       "updatedAt": "2026-04-01T10:18:45.184Z"
     }
   ],
-  "$schema": "../node_modules/json-server/schema.json"
+  "$schema": "./node_modules/json-server/schema.json"
 }

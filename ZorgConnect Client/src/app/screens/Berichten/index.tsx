@@ -23,12 +23,14 @@ import {
   sortMessagesOldestFirst,
 } from "../../lib/chatSort";
 
-const initialMockMessages = [
-  { id: 1, message: "Hallo, hoe gaat het met je?", senderType: "staff", timestamp: "14:20", chatId: "1", read: true },
-  { id: 2, message: "Het gaat goed, dank je!", senderType: "client", timestamp: "14:25", chatId: "1", read: false },
-  { id: 3, message: "Fijn om te horen. Heb je nog vragen?", senderType: "staff", timestamp: "14:28", chatId: "1", read: true },
-  { id: 4, message: "Dank je wel voor het gesprek vandaag", senderType: "client", timestamp: "14:30", chatId: "1", read: false },
-];
+type DirectChatMessage = {
+  id: string | number;
+  chatId: string;
+  senderType: "staff" | "client";
+  message: string;
+  timestamp: string;
+  read: boolean;
+};
 
 const createMsgId = () =>
   `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
@@ -47,7 +49,7 @@ export default function Berichten() {
   const [selectedChatId, setSelectedChatId] = useState<string | null>(initialChatId);
   const currentChatId = selectedChatId ?? "";
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState(initialMockMessages);
+  const [messages, setMessages] = useState<DirectChatMessage[]>([]);
   const [showNewChatSheet, setShowNewChatSheet] = useState(false);
   const [newChatMode, setNewChatMode] = useState<"direct" | "group">("direct");
   const [selectedGroupMemberIds, setSelectedGroupMemberIds] = useState<number[]>([]);
@@ -57,6 +59,16 @@ export default function Berichten() {
   const [triggerWarning, setTriggerWarning] = useState<string | null>(null);
   const [socketConnected, setSocketConnected] = useState(false);
   const localTriggerWords = ["help", "emergency", "urgent", "suicide", "panic", "abuse", "danger", "angst", "stress"];
+  const localExactOnlyTriggerWords = new Set(["help"]);
+
+  const getLocalTriggerMatches = (message: string) => {
+    const lower = String(message || "").toLowerCase();
+    const cleaned = lower.trim().replace(/^[\s\W_]+|[\s\W_]+$/g, "");
+    const tokens = lower.split(/\W+/).filter(Boolean);
+    return localTriggerWords.filter((word) =>
+      localExactOnlyTriggerWords.has(word) ? cleaned === word : tokens.includes(word)
+    );
+  };
 
 
   const filteredCareWorkers = mockCoupledCareWorkers.filter((worker) =>
@@ -308,8 +320,7 @@ export default function Berichten() {
         }),
         read: false,
       };
-      const lower = msg.message.toLowerCase();
-      const localMatches = localTriggerWords.filter((word) => lower.includes(word));
+      const localMatches = getLocalTriggerMatches(msg.message);
       if (localMatches.length > 0) {
         const warningText = `Trigger word gedetecteerd: ${localMatches.join(", ")} in bericht "${msg.message}"`;
         setTriggerWarning(warningText);
@@ -344,10 +355,9 @@ export default function Berichten() {
       read: false,
     };
 
-    const lower = msg.message.toLowerCase();
-    const localMatches = localTriggerWords.filter((word) => lower.includes(word));
+    const localMatches = getLocalTriggerMatches(msg.message);
     if (localMatches.length > 0) {
-      const warningText = `Trigger word gedetecteerd: ${localMatches.join(", ")} in bericht "${msg.message}"`;
+      const warningText = `Trigger word gedetecteerd: ${localMatches.join(", ")} in bericht "${msg.message}". Buiten de demo is dit alleen zichtbaar voor de medewerker.`;
       setTriggerWarning(warningText);
       setTimeout(() => setTriggerWarning(null), 10000);
     }
@@ -629,12 +639,12 @@ export default function Berichten() {
               placeholder={
                 clientBlockedOnGroup ? "Even geduld — goedkeuring nodig" : "Typ een bericht..."
               }
-              disabled={clientBlockedOnGroup}
+              disabled={!!clientBlockedOnGroup}
               className="flex-1 px-4 py-2 border border-border bg-background rounded-full focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-60"
             />
             <button
               onClick={handleSend}
-              disabled={!message.trim() || clientBlockedOnGroup}
+              disabled={!message.trim() || !!clientBlockedOnGroup}
               className="w-10 h-10 bg-secondary text-secondary-foreground rounded-full flex items-center justify-center hover:bg-secondary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Send size={20} />
